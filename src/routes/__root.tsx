@@ -93,6 +93,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "RiayahOS — Healthcare Intelligence Platform" },
+      { name: "description", content: "RiayahOS Foundation provides a premium healthcare OS for connecting patients with international medical facilities." },
+      { property: "og:description", content: "RiayahOS Foundation provides a premium healthcare OS for connecting patients with international medical facilities." },
+      { name: "twitter:description", content: "RiayahOS Foundation provides a premium healthcare OS for connecting patients with international medical facilities." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/662cbd41-f868-40f3-b438-b8b6dbbc24ba/id-preview-b298934c--f9d616c3-e821-4c98-b48e-09b6c14ed436.lovable.app-1782679441069.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/662cbd41-f868-40f3-b438-b8b6dbbc24ba/id-preview-b298934c--f9d616c3-e821-4c98-b48e-09b6c14ed436.lovable.app-1782679441069.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
