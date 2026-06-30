@@ -164,21 +164,32 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }: Props) {
         </ScrollArea>
 
         {/* Footer */}
-        {!collapsed && (
-          <div className="border-t border-sidebar-border p-3">
+        <div className="border-t border-sidebar-border p-3">
+          {collapsed ? (
+            <div
+              className="mx-auto h-2 w-2 rounded-full bg-success animate-pulse"
+              title="All systems operational"
+              aria-label="All systems operational"
+            />
+          ) : (
             <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 p-3">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                <span className="text-xs font-medium text-sidebar-foreground">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-xs font-semibold text-sidebar-foreground">
+                  RiayahOS
+                </span>
+                <span className="font-numeric text-[10px] text-muted-foreground">
+                  v1.0
+                </span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                <span className="text-[11px] font-medium text-sidebar-foreground">
                   All systems operational
                 </span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                v1.0 · Module 1 Foundation
-              </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
     </>
   );

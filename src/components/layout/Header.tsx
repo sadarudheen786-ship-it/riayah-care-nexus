@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Bell,
   Calendar,
   ChevronDown,
   LogOut,
@@ -8,6 +7,7 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  RefreshCw,
   Search,
   Settings,
   Sun,
@@ -30,6 +30,7 @@ import {
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { GlobalSearch } from "./GlobalSearch";
 import { NotificationsMenu } from "./NotificationsMenu";
+import { QuickActions } from "./QuickActions";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -38,13 +39,23 @@ interface Props {
   onOpenMobile: () => void;
 }
 
+function greetingFor(hour: number) {
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export function Header({ collapsed, onToggleSidebar, onOpenMobile }: Props) {
   const { theme, toggleTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [lang, setLang] = useState<"EN" | "AR">("EN");
-  const [now, setNow] = useState<Date>(new Date());
+  // Avoid SSR/CSR mismatch: render time-derived strings only after mount.
+  const [now, setNow] = useState<Date | null>(null);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
+    setLastSync(new Date());
     const t = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(t);
   }, []);
@@ -60,21 +71,25 @@ export function Header({ collapsed, onToggleSidebar, onOpenMobile }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const hour = now.getHours();
-  const greet =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-
-  const dateStr = now.toLocaleDateString("en-US", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const greet = now ? greetingFor(now.getHours()) : "Welcome";
+  const dateStr = now
+    ? now.toLocaleDateString("en-US", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "";
+  const syncStr = lastSync
+    ? lastSync.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "";
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        {/* Sidebar toggles */}
         <Button
           variant="ghost"
           size="icon"
@@ -98,28 +113,28 @@ export function Header({ collapsed, onToggleSidebar, onOpenMobile }: Props) {
           )}
         </Button>
 
-        {/* Greeting */}
         <div className="hidden min-w-0 md:block">
           <div className="font-display text-[15px] font-semibold leading-tight text-foreground">
             {greet}, Sadarudheen
           </div>
           <div className="text-xs text-muted-foreground">
-            Here's what's happening across Riayah Care today.
+            Riayah Care Operations Dashboard
           </div>
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Search trigger */}
         <button
           onClick={() => setSearchOpen(true)}
           className={cn(
-            "group hidden h-10 items-center gap-2 rounded-xl border border-border bg-background/60 px-3 text-left text-sm text-muted-foreground transition-all hover:border-primary/30 hover:bg-background md:flex md:w-[320px] lg:w-[400px]",
+            "group hidden h-10 items-center gap-2 rounded-xl border border-border bg-background/60 px-3 text-left text-sm text-muted-foreground transition-all hover:border-primary/30 hover:bg-background md:flex md:w-[300px] lg:w-[380px]",
           )}
+          aria-label="Open command search"
         >
           <Search className="h-4 w-4" />
-          <span className="flex-1 truncate">Search patients, doctors, hospitals…</span>
+          <span className="flex-1 truncate">
+            Search patients, cases, hospitals, doctors, reports…
+          </span>
           <kbd className="hidden items-center gap-1 rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline-flex">
             <CommandIcon className="h-3 w-3" />K
           </kbd>
@@ -134,13 +149,27 @@ export function Header({ collapsed, onToggleSidebar, onOpenMobile }: Props) {
           <Search className="h-5 w-5" />
         </Button>
 
-        {/* Date */}
-        <div className="hidden h-10 items-center gap-2 rounded-xl border border-border bg-background/60 px-3 text-xs font-medium text-muted-foreground xl:flex">
-          <Calendar className="h-4 w-4 text-primary" />
-          <span className="font-numeric">{dateStr}</span>
+        {/* Date + last sync */}
+        <div className="hidden h-10 items-center gap-3 rounded-xl border border-border bg-background/60 px-3 text-xs font-medium text-muted-foreground xl:flex">
+          <span className="inline-flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-primary" />
+            <span className="font-numeric" suppressHydrationWarning>
+              {dateStr || "—"}
+            </span>
+          </span>
+          <span className="h-3 w-px bg-border" />
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="Last data sync"
+            suppressHydrationWarning
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-success" />
+            <span className="font-numeric">Synced {syncStr || "—"}</span>
+          </span>
         </div>
 
-        {/* Language */}
+        <QuickActions />
+
         <Button
           variant="ghost"
           size="icon"
@@ -154,7 +183,6 @@ export function Header({ collapsed, onToggleSidebar, onOpenMobile }: Props) {
           </span>
         </Button>
 
-        {/* Theme */}
         <Button
           variant="ghost"
           size="icon"
@@ -164,15 +192,16 @@ export function Header({ collapsed, onToggleSidebar, onOpenMobile }: Props) {
           {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
 
-        {/* Notifications */}
         <NotificationsMenu />
 
         <Separator orientation="vertical" className="mx-1 h-8" />
 
-        {/* Profile */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-xl px-1.5 py-1 transition-colors hover:bg-muted focus-ring">
+            <button
+              className="flex items-center gap-2 rounded-xl px-1.5 py-1 transition-colors hover:bg-muted focus-ring"
+              aria-label="Profile menu"
+            >
               <Avatar className="h-9 w-9 border border-border">
                 <AvatarFallback className="bg-primary text-primary-foreground font-display font-semibold text-sm">
                   SD
