@@ -2,15 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   Users,
   UserPlus,
-  Stethoscope,
+  MessageSquareQuote,
   Wallet,
   Plus,
   Download,
   FileText,
   CheckCircle2,
-  MessageSquare,
   Plane,
   Activity,
+  Upload,
+  Stethoscope,
+  PlaneTakeoff,
+  CarFront,
+  Receipt,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";
@@ -27,7 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
+import { countryFlag } from "@/lib/flags";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,20 +41,40 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Executive overview of leads, patients, hospitals, and operations across Riayah Care.",
+          "Real-time overview of Riayah Care operations: leads, active cases, hospital opinions and revenue across GCC markets.",
       },
     ],
   }),
   component: Dashboard,
 });
 
+type Priority = "Critical" | "High" | "Medium" | "Low";
+
+const PRIORITY_STYLES: Record<Priority, string> = {
+  Critical: "bg-destructive/10 text-destructive border-destructive/20",
+  High: "bg-warning/10 text-warning border-warning/30",
+  Medium: "bg-info/10 text-info border-info/20",
+  Low: "bg-muted text-muted-foreground border-border",
+};
+
+function PriorityBadge({ level }: { level: Priority }) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn("h-5 px-2 text-[11px] font-semibold", PRIORITY_STYLES[level])}
+    >
+      {level}
+    </Badge>
+  );
+}
+
 function Dashboard() {
   return (
     <>
       <PageHeader
         eyebrow="Executive Overview"
-        title="Dashboard"
-        subtitle="A real-time view of patient flow, partner hospitals and revenue across all GCC markets."
+        title="Operations Dashboard"
+        subtitle="Real-time overview of Riayah Care operations across GCC markets and partner hospitals in Kerala."
         actions={
           <>
             <Button variant="outline" size="sm">
@@ -72,26 +97,26 @@ function Dashboard() {
           tone="primary"
         />
         <StatCard
-          label="Patients in Care"
+          label="Active Cases"
           value="62"
           delta={{ value: "+4", trend: "up" }}
-          hint="across 14 hospitals"
+          hint="patients under coordination"
           icon={Users}
           tone="info"
         />
         <StatCard
-          label="Specialists Engaged"
-          value="187"
-          delta={{ value: "+8", trend: "up" }}
-          hint="cardiology trending"
-          icon={Stethoscope}
+          label="Hospital Opinions Pending"
+          value="18"
+          delta={{ value: "-3", trend: "down" }}
+          hint="awaiting specialist reply"
+          icon={MessageSquareQuote}
           tone="accent"
         />
         <StatCard
-          label="Revenue (MTD)"
-          value="AED 1.42M"
+          label="Revenue (Month to Date)"
+          value="₹ 1.42 Cr"
           delta={{ value: "+6.1%", trend: "up" }}
-          hint="vs last month"
+          hint="reported in INR"
           icon={Wallet}
           tone="success"
         />
@@ -99,8 +124,8 @@ function Dashboard() {
 
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
         <Widget
-          title="Patient Pipeline"
-          description="Lead-to-treatment conversion by stage"
+          title="Patient Workflow"
+          description="Cases by current stage in the coordination journey"
           className="xl:col-span-2"
           actions={
             <Button variant="ghost" size="sm">
@@ -112,9 +137,11 @@ function Dashboard() {
             {[
               { label: "New Inquiry", value: 248, pct: 100, tone: "bg-primary" },
               { label: "Medical Review", value: 162, pct: 65, tone: "bg-secondary" },
-              { label: "Proposal Sent", value: 98, pct: 40, tone: "bg-info" },
-              { label: "Visa & Travel", value: 47, pct: 19, tone: "bg-accent" },
-              { label: "Admitted", value: 28, pct: 11, tone: "bg-success" },
+              { label: "Hospital Opinion", value: 124, pct: 50, tone: "bg-info" },
+              { label: "Proposal Sent", value: 98, pct: 40, tone: "bg-accent" },
+              { label: "Patient Decision", value: 72, pct: 29, tone: "bg-warning" },
+              { label: "Travel Planning", value: 47, pct: 19, tone: "bg-info" },
+              { label: "Treatment Journey", value: 28, pct: 11, tone: "bg-success" },
             ].map((row) => (
               <div key={row.label}>
                 <div className="mb-1.5 flex items-center justify-between text-sm">
@@ -132,43 +159,64 @@ function Dashboard() {
           </div>
         </Widget>
 
-        <Widget title="Recent Activity" description="Latest events across the workspace">
+        <Widget title="Recent Activity" description="Latest events across cases">
           <Timeline
             items={[
               {
-                icon: UserPlus,
-                title: "New lead from Riyadh",
-                description: "Cardiology consult requested",
+                icon: Upload,
+                title: "MRI uploaded",
+                description: "Case RY-2104 · by Family · 2m",
                 time: "2m",
+                tone: "info",
+              },
+              {
+                icon: Stethoscope,
+                title: "Hospital opinion received",
+                description: "Dr. Suresh, Amrita · Oncology",
+                time: "1h",
                 tone: "primary",
               },
               {
                 icon: FileText,
-                title: "Proposal #PR-2041 sent",
-                description: "Aster Medcity — orthopedics",
-                time: "1h",
+                title: "Proposal generated",
+                description: "Aster Medcity · by Anjali",
+                time: "2h",
                 tone: "info",
               },
               {
                 icon: CheckCircle2,
-                title: "Visa approved",
-                description: "Patient RY-2104 cleared",
+                title: "Patient confirmed",
+                description: "Al-Mansoori family approved plan",
                 time: "3h",
                 tone: "success",
               },
               {
                 icon: Plane,
-                title: "Arrival scheduled",
-                description: "BLR · Tomorrow 09:40",
+                title: "Visa approved",
+                description: "RY-2104 cleared by Coordinator",
                 time: "5h",
+                tone: "success",
+              },
+              {
+                icon: PlaneTakeoff,
+                title: "Flight booked",
+                description: "BLR · Tomorrow 09:40",
+                time: "6h",
                 tone: "warning",
               },
               {
-                icon: MessageSquare,
-                title: "Second opinion received",
-                description: "Dr. Suresh — oncology",
-                time: "1d",
+                icon: CarFront,
+                title: "Pickup scheduled",
+                description: "Driver assigned · Kochi airport",
+                time: "8h",
                 tone: "info",
+              },
+              {
+                icon: Receipt,
+                title: "Payment received",
+                description: "INV-1042 · AED 18,500",
+                time: "1d",
+                tone: "success",
               },
             ]}
           />
@@ -177,8 +225,8 @@ function Dashboard() {
 
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
         <Widget
-          title="Active Patients"
-          description="Currently under coordination"
+          title="Active Cases"
+          description="Cases requiring coordination action"
           className="xl:col-span-2"
           actions={
             <Button variant="ghost" size="sm">
@@ -187,91 +235,141 @@ function Dashboard() {
           }
           contentClassName="p-0"
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Hospital</TableHead>
-                <TableHead>Specialty</TableHead>
-                <TableHead>Stage</TableHead>
-                <TableHead className="text-right">Progress</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[
-                {
-                  name: "Ahmed Al-Mansoori",
-                  country: "UAE",
-                  hospital: "Aster Medcity",
-                  specialty: "Cardiology",
-                  stage: "Admitted",
-                  tone: "success" as const,
-                  progress: 80,
-                },
-                {
-                  name: "Fatima Al-Sayed",
-                  country: "KSA",
-                  hospital: "Amrita Hospital",
-                  specialty: "Oncology",
-                  stage: "Pre-Op",
-                  tone: "info" as const,
-                  progress: 55,
-                },
-                {
-                  name: "Yousef Al-Rashidi",
-                  country: "Kuwait",
-                  hospital: "VPS Lakeshore",
-                  specialty: "Orthopedics",
-                  stage: "Travel",
-                  tone: "warning" as const,
-                  progress: 35,
-                },
-                {
-                  name: "Mariam Hassan",
-                  country: "Oman",
-                  hospital: "KIMS Health",
-                  specialty: "Neurology",
-                  stage: "Proposal",
-                  tone: "secondary" as const,
-                  progress: 20,
-                },
-              ].map((p) => (
-                <TableRow key={p.name}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-muted text-xs font-medium">
-                          {p.name
-                            .split(" ")
-                            .map((s) => s[0])
-                            .slice(0, 2)
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium text-foreground">{p.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{p.country}</TableCell>
-                  <TableCell className="text-muted-foreground">{p.hospital}</TableCell>
-                  <TableCell className="text-muted-foreground">{p.specialty}</TableCell>
-                  <TableCell>
-                    <Badge variant={p.tone === "warning" ? "outline" : "secondary"}>
-                      {p.stage}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Progress value={p.progress} className="h-1.5 w-24" />
-                      <span className="font-numeric text-xs text-muted-foreground">
-                        {p.progress}%
-                      </span>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Patient</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Hospital</TableHead>
+                  <TableHead>Coordinator</TableHead>
+                  <TableHead>Stage</TableHead>
+                  <TableHead>Next Action</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {[
+                  {
+                    name: "Ahmed Al-Mansoori",
+                    country: "UAE",
+                    hospital: "Aster Medcity",
+                    coordinator: { name: "Anjali R.", initials: "AR" },
+                    stage: "Treatment Journey",
+                    next: "Daily progress note",
+                    priority: "High" as Priority,
+                    status: "On Track",
+                    statusTone: "success" as const,
+                  },
+                  {
+                    name: "Fatima Al-Sayed",
+                    country: "KSA",
+                    hospital: "Amrita Hospital",
+                    coordinator: { name: "Rahul M.", initials: "RM" },
+                    stage: "Hospital Opinion",
+                    next: "Chase Dr. Suresh reply",
+                    priority: "Critical" as Priority,
+                    status: "Waiting",
+                    statusTone: "warning" as const,
+                  },
+                  {
+                    name: "Yousef Al-Rashidi",
+                    country: "Kuwait",
+                    hospital: "VPS Lakeshore",
+                    coordinator: { name: "Sneha P.", initials: "SP" },
+                    stage: "Travel Planning",
+                    next: "Confirm visa documents",
+                    priority: "Medium" as Priority,
+                    status: "In Progress",
+                    statusTone: "info" as const,
+                  },
+                  {
+                    name: "Mariam Hassan",
+                    country: "Oman",
+                    hospital: "KIMS Health",
+                    coordinator: { name: "Anjali R.", initials: "AR" },
+                    stage: "Proposal Sent",
+                    next: "Follow up on decision",
+                    priority: "Low" as Priority,
+                    status: "Awaiting Reply",
+                    statusTone: "muted" as const,
+                  },
+                ].map((p) => (
+                  <TableRow key={p.name}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-muted text-xs font-medium">
+                            {p.name
+                              .split(" ")
+                              .map((s) => s[0])
+                              .slice(0, 2)
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium text-foreground">{p.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                        <span aria-hidden className="text-base leading-none">
+                          {countryFlag(p.country)}
+                        </span>
+                        {p.country}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{p.hospital}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+                            {p.coordinator.initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs text-muted-foreground">
+                          {p.coordinator.name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-normal">
+                        {p.stage}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[180px] truncate text-sm text-foreground">
+                      {p.next}
+                    </TableCell>
+                    <TableCell>
+                      <PriorityBadge level={p.priority} />
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 text-xs font-medium",
+                          p.statusTone === "success" && "text-success",
+                          p.statusTone === "warning" && "text-warning",
+                          p.statusTone === "info" && "text-info",
+                          p.statusTone === "muted" && "text-muted-foreground",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 rounded-full",
+                            p.statusTone === "success" && "bg-success",
+                            p.statusTone === "warning" && "bg-warning animate-pulse",
+                            p.statusTone === "info" && "bg-info",
+                            p.statusTone === "muted" && "bg-muted-foreground/50",
+                          )}
+                        />
+                        {p.status}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </Widget>
 
         <Widget title="System Health" description="Platform & integrations">
