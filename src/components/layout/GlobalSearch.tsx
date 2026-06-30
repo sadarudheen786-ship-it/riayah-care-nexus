@@ -16,6 +16,9 @@ import {
   BarChart3,
   Wallet,
   Files,
+  FileText,
+  Receipt,
+  MessageSquareQuote,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -26,15 +29,28 @@ interface Props {
 
 const SECTIONS = [
   {
-    heading: "Navigate",
+    heading: "Cases & People",
     items: [
       { icon: Users, label: "Patients", to: "/patients" },
       { icon: UserPlus, label: "Leads", to: "/leads" },
       { icon: Stethoscope, label: "Doctors", to: "/doctors" },
       { icon: Building2, label: "Hospitals", to: "/hospitals" },
-      { icon: Activity, label: "Disease Engine", to: "/disease-engine" },
+    ],
+  },
+  {
+    heading: "Medical",
+    items: [
+      { icon: Activity, label: "Diseases", to: "/disease-engine" },
+      { icon: MessageSquareQuote, label: "Hospital Opinions", to: "/hospital-opinions" },
+      { icon: FileText, label: "Proposals", to: "/proposals" },
+    ],
+  },
+  {
+    heading: "Finance & Reports",
+    items: [
+      { icon: Wallet, label: "Finance", to: "/finance" },
+      { icon: Receipt, label: "Invoices", to: "/finance" },
       { icon: BarChart3, label: "Reports", to: "/reports" },
-      { icon: Wallet, label: "Invoices", to: "/finance" },
       { icon: Files, label: "Documents", to: "/documents" },
     ],
   },
@@ -50,7 +66,7 @@ export function GlobalSearch({ open, onOpenChange }: Props) {
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Search patients, leads, doctors, hospitals, diseases, reports…" />
+      <CommandInput placeholder="Search patients, cases, hospitals, doctors, reports…" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         {SECTIONS.map((section, idx) => (
@@ -61,8 +77,8 @@ export function GlobalSearch({ open, onOpenChange }: Props) {
                 const Icon = item.icon;
                 return (
                   <CommandItem
-                    key={item.to}
-                    value={item.label}
+                    key={`${section.heading}-${item.label}`}
+                    value={`${section.heading} ${item.label}`}
                     onSelect={() => go(item.to)}
                   >
                     <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
