@@ -755,13 +755,13 @@ function CommandCenter() {
                     </TableCell>
                   </TableRow>
                   {expanded === c.id && (
-                    <TableRow key={`${c.id}-x`} className="bg-muted/30 hover:bg-muted/30">
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
                       <TableCell colSpan={10} className="p-0">
                         <CaseCommandCard urgent={c} />
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))}
               {urgent.length === 0 && (
                 <TableRow>
