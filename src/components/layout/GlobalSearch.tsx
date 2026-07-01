@@ -19,6 +19,7 @@ import {
   FileText,
   Receipt,
   MessageSquareQuote,
+  Radar,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
