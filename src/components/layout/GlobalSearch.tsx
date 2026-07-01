@@ -30,6 +30,12 @@ interface Props {
 
 const SECTIONS = [
   {
+    heading: "Workspaces",
+    items: [
+      { icon: Radar, label: "Executive Command Center", to: "/command-center" },
+    ],
+  },
+  {
     heading: "Cases & People",
     items: [
       { icon: Users, label: "Patients", to: "/patients" },
