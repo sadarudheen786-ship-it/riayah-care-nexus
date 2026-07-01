@@ -19,6 +19,7 @@ import {
   FileText,
   Receipt,
   MessageSquareQuote,
+  Radar,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -28,6 +29,12 @@ interface Props {
 }
 
 const SECTIONS = [
+  {
+    heading: "Workspaces",
+    items: [
+      { icon: Radar, label: "Executive Command Center", to: "/command-center" },
+    ],
+  },
   {
     heading: "Cases & People",
     items: [
