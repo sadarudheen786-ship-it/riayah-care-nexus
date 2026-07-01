@@ -690,9 +690,8 @@ function CommandCenter() {
             </TableHeader>
             <TableBody>
               {urgent.map((c) => (
-                <>
+                <Fragment key={c.id}>
                   <TableRow
-                    key={c.id}
                     className="cursor-pointer"
                     onClick={() => setExpanded(expanded === c.id ? null : c.id)}
                   >
