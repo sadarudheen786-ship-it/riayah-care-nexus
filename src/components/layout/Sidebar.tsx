@@ -32,6 +32,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard, group: "Workspace" },
+  { label: "Executive Command Center", to: "/command-center", icon: Radar, group: "Workspace" },
   { label: "Lead Management", to: "/leads", icon: UserPlus, group: "Workspace" },
   { label: "Patients", to: "/patients", icon: Users, group: "Workspace" },
 
