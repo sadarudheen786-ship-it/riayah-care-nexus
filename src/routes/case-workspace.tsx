@@ -146,7 +146,7 @@ function CaseWorkspace() {
       <PageHeader
         eyebrow="Case Workspace"
         title={CASE.patientName}
-        description="Single source of truth · every department works from this record. Tabs unlock automatically as the case progresses."
+        subtitle="Single source of truth · every department works from this record. Tabs unlock automatically as the case progresses."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
