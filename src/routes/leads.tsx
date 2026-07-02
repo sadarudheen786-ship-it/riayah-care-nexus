@@ -18,7 +18,6 @@ import {
   Sparkles,
   BrainCircuit,
   AlertTriangle,
-  Languages,
   Copy,
   ChevronRight,
   CalendarClock,
@@ -33,6 +32,14 @@ import {
   Building2,
   DoorOpen,
   Keyboard,
+  Siren,
+  Activity,
+  HeartPulse,
+  BedDouble,
+  ClipboardCheck,
+  Package,
+  ShieldAlert,
+  Percent,
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -67,6 +74,13 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -75,6 +89,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { countryFlag } from "@/lib/flags";
+import type { CurrencyCode, MoneyAmount } from "@/lib/finance";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/leads")({
@@ -84,7 +99,7 @@ export const Route = createFileRoute("/leads")({
       {
         name: "description",
         content:
-          "Manage every patient enquiry from first contact to case conversion — GCC leads, pipeline stages, coordinators and follow-ups in one workspace.",
+          "Manage every patient enquiry from first contact to case conversion — GCC leads, funnel, coordinators and follow-ups in one workspace.",
       },
     ],
   }),
@@ -96,7 +111,7 @@ export const Route = createFileRoute("/leads")({
 /* ---------------------------------------------------------------- */
 
 type Priority = "Critical" | "High" | "Medium" | "Low";
-type Tone = "primary" | "info" | "success" | "warning" | "danger" | "accent";
+type Urgency = "Critical" | "Emergency" | "High" | "Medium" | "Low";
 
 type Stage =
   | "New"
@@ -121,14 +136,16 @@ type LeadSource =
   | "Walk-In"
   | "Manual Entry";
 
-type LeadType =
+type CaseType =
   | "Second Opinion"
   | "OP Consultation"
   | "Diagnostics"
   | "Day Care"
-  | "Admission"
   | "Surgery"
-  | "Follow-up";
+  | "Admission"
+  | "Follow-up"
+  | "Health Check-up"
+  | "Medical Package";
 
 type Status =
   | "New"
@@ -139,6 +156,14 @@ type Status =
   | "Proposal"
   | "Converted"
   | "Lost";
+
+type NextActionType =
+  | "Call Patient"
+  | "Request Reports"
+  | "Send Hospital Opinion"
+  | "Generate Proposal"
+  | "Follow-up Today"
+  | "Schedule Consultation";
 
 const PRIORITY_STYLES: Record<Priority, string> = {
   Critical: "bg-destructive/10 text-destructive border-destructive/20",
@@ -154,6 +179,64 @@ function PriorityBadge({ level }: { level: Priority }) {
       className={cn("h-5 px-2 text-[11px] font-semibold", PRIORITY_STYLES[level])}
     >
       {level}
+    </Badge>
+  );
+}
+
+const URGENCY_STYLES: Record<Urgency, string> = {
+  Critical: "bg-destructive/10 text-destructive border-destructive/20",
+  Emergency: "bg-destructive/15 text-destructive border-destructive/30",
+  High: "bg-warning/10 text-warning border-warning/30",
+  Medium: "bg-info/10 text-info border-info/20",
+  Low: "bg-muted text-muted-foreground border-border",
+};
+
+function UrgencyBadge({ level }: { level: Urgency }) {
+  const Icon = level === "Emergency" || level === "Critical" ? Siren : ShieldAlert;
+  return (
+    <Badge
+      variant="outline"
+      className={cn("h-5 gap-1 px-2 text-[11px] font-semibold", URGENCY_STYLES[level])}
+    >
+      <Icon className="h-3 w-3" />
+      {level}
+    </Badge>
+  );
+}
+
+const CASE_TYPE_STYLES: Record<CaseType, string> = {
+  "Second Opinion": "bg-info/10 text-info border-info/20",
+  "OP Consultation": "bg-primary/10 text-primary border-primary/20",
+  Diagnostics: "bg-secondary/15 text-secondary-foreground border-secondary/30",
+  "Day Care": "bg-accent/15 text-accent-foreground border-accent/30",
+  Surgery: "bg-destructive/10 text-destructive border-destructive/20",
+  Admission: "bg-warning/10 text-warning border-warning/30",
+  "Follow-up": "bg-muted text-muted-foreground border-border",
+  "Health Check-up": "bg-success/10 text-success border-success/20",
+  "Medical Package": "bg-accent/10 text-accent-foreground border-accent/20",
+};
+
+const CASE_TYPE_ICON: Record<CaseType, LucideIcon> = {
+  "Second Opinion": MessageSquareQuote,
+  "OP Consultation": Stethoscope,
+  Diagnostics: Activity,
+  "Day Care": HeartPulse,
+  Surgery: Stethoscope,
+  Admission: BedDouble,
+  "Follow-up": ClipboardCheck,
+  "Health Check-up": ClipboardCheck,
+  "Medical Package": Package,
+};
+
+function CaseTypeBadge({ type }: { type: CaseType }) {
+  const Icon = CASE_TYPE_ICON[type];
+  return (
+    <Badge
+      variant="outline"
+      className={cn("h-5 gap-1 px-2 text-[11px] font-semibold", CASE_TYPE_STYLES[type])}
+    >
+      <Icon className="h-3 w-3" />
+      {type}
     </Badge>
   );
 }
@@ -191,6 +274,15 @@ const SOURCE_ICON: Record<LeadSource, LucideIcon> = {
   "Manual Entry": Keyboard,
 };
 
+const NEXT_ACTION_ICON: Record<NextActionType, LucideIcon> = {
+  "Call Patient": Phone,
+  "Request Reports": FileText,
+  "Send Hospital Opinion": MessageSquareQuote,
+  "Generate Proposal": ClipboardList,
+  "Follow-up Today": CalendarClock,
+  "Schedule Consultation": Stethoscope,
+};
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -200,8 +292,21 @@ function initials(name: string) {
 }
 
 /* ---------------------------------------------------------------- */
+/*  Missing reports checklist                                       */
+/* ---------------------------------------------------------------- */
+
+type ReportKey = "MRI" | "CT" | "Blood" | "Passport" | "Prescription" | "X-Ray" | "ECG";
+const REPORT_KEYS: ReportKey[] = ["MRI", "CT", "Blood", "Passport", "Prescription"];
+
+/* ---------------------------------------------------------------- */
 /*  Demo data (Supabase-ready shapes)                               */
 /* ---------------------------------------------------------------- */
+
+interface NextAction {
+  type: NextActionType;
+  due: string;
+  priority: Priority;
+}
 
 interface Lead {
   id: string;
@@ -211,21 +316,41 @@ interface Lead {
   country: string;
   language: string;
   source: LeadSource;
-  type: LeadType;
+  caseType: CaseType;
   disease: string;
   stage: Stage;
   status: Status;
   coordinator: { name: string; initials: string };
   priority: Priority;
+  urgency: Urgency;
   lastContact: string;
   nextFollowUp: string;
   createdAt: string;
-  reportsCount: number;
   hospitalRequests: number;
+  reports: Record<ReportKey, boolean>;
+  estimatedValue: MoneyAmount | null;
+  nextAction: NextAction;
   notes: string;
 }
 
 const COORDINATORS = ["Anjali R.", "Rahul M.", "Sneha P.", "Vikram S."] as const;
+
+const money = (
+  currency: CurrencyCode,
+  amount: number,
+  rate: number,
+): MoneyAmount => ({
+  originalCurrency: currency,
+  originalAmount: amount,
+  exchangeRate: rate,
+  convertedInrAmount: Math.round(amount * rate),
+});
+
+const reports = (present: ReportKey[]): Record<ReportKey, boolean> => {
+  const base = { MRI: false, CT: false, Blood: false, Passport: false, Prescription: false, "X-Ray": false, ECG: false } as Record<ReportKey, boolean>;
+  for (const k of present) base[k] = true;
+  return base;
+};
 
 const LEADS: Lead[] = [
   {
@@ -236,17 +361,20 @@ const LEADS: Lead[] = [
     country: "UAE",
     language: "Arabic",
     source: "WhatsApp",
-    type: "Surgery",
+    caseType: "Surgery",
     disease: "Cardiac Bypass",
     stage: "Proposal Generated",
     status: "Proposal",
     coordinator: { name: "Anjali R.", initials: "AR" },
     priority: "High",
-    lastContact: "2h ago",
+    urgency: "High",
+    lastContact: "2 hours ago",
     nextFollowUp: "Today · 5:30 PM",
     createdAt: "3 days ago",
-    reportsCount: 4,
     hospitalRequests: 2,
+    reports: reports(["MRI", "CT", "Blood", "Prescription"]),
+    estimatedValue: money("AED", 68000, 22.7),
+    nextAction: { type: "Generate Proposal", due: "Today · 5:30 PM", priority: "High" },
     notes: "Family requested comparison between Aster and Amrita quotes.",
   },
   {
@@ -257,17 +385,20 @@ const LEADS: Lead[] = [
     country: "KSA",
     language: "Arabic",
     source: "Meta Ads",
-    type: "Second Opinion",
+    caseType: "Second Opinion",
     disease: "Breast Oncology",
     stage: "Hospital Opinion Requested",
     status: "Hospital Opinion",
     coordinator: { name: "Rahul M.", initials: "RM" },
     priority: "Critical",
-    lastContact: "1d ago",
+    urgency: "Critical",
+    lastContact: "Yesterday",
     nextFollowUp: "Today · 2:00 PM",
     createdAt: "5 days ago",
-    reportsCount: 6,
     hospitalRequests: 3,
+    reports: reports(["MRI", "CT", "Blood", "Passport", "Prescription"]),
+    estimatedValue: money("SAR", 92000, 22.1),
+    nextAction: { type: "Send Hospital Opinion", due: "Today · 2:00 PM", priority: "Critical" },
     notes: "Awaiting Dr. Suresh opinion. SLA breach — escalate today.",
   },
   {
@@ -278,17 +409,20 @@ const LEADS: Lead[] = [
     country: "Kuwait",
     language: "Arabic",
     source: "Referral Partner",
-    type: "Surgery",
+    caseType: "Surgery",
     disease: "Spine Fusion",
     stage: "Reports Received",
     status: "Medical Review",
     coordinator: { name: "Sneha P.", initials: "SP" },
     priority: "High",
-    lastContact: "4h ago",
+    urgency: "Emergency",
+    lastContact: "4 hours ago",
     nextFollowUp: "Tomorrow · 10:00 AM",
     createdAt: "2 days ago",
-    reportsCount: 3,
     hospitalRequests: 0,
+    reports: reports(["MRI", "Blood", "Prescription"]),
+    estimatedValue: money("KWD", 5200, 250.4),
+    nextAction: { type: "Schedule Consultation", due: "Tomorrow · 10:00 AM", priority: "High" },
     notes: "MRI + X-ray uploaded. Ready for internal medical review.",
   },
   {
@@ -299,17 +433,20 @@ const LEADS: Lead[] = [
     country: "Oman",
     language: "Arabic",
     source: "Website",
-    type: "OP Consultation",
+    caseType: "OP Consultation",
     disease: "Neurology Consult",
     stage: "Contacted",
     status: "Contacted",
     coordinator: { name: "Anjali R.", initials: "AR" },
     priority: "Medium",
-    lastContact: "6h ago",
+    urgency: "Medium",
+    lastContact: "6 hours ago",
     nextFollowUp: "Today · 7:00 PM",
-    createdAt: "1 day ago",
-    reportsCount: 0,
+    createdAt: "Yesterday",
     hospitalRequests: 0,
+    reports: reports([]),
+    estimatedValue: null,
+    nextAction: { type: "Request Reports", due: "Today · 7:00 PM", priority: "Medium" },
     notes: "Prefers Aster Medcity. English secondary.",
   },
   {
@@ -320,17 +457,20 @@ const LEADS: Lead[] = [
     country: "UAE",
     language: "Arabic",
     source: "Hospital Referral",
-    type: "Surgery",
+    caseType: "Admission",
     disease: "Liver Transplant",
     stage: "Opinion Received",
     status: "Hospital Opinion",
     coordinator: { name: "Rahul M.", initials: "RM" },
     priority: "Critical",
-    lastContact: "30m ago",
+    urgency: "Critical",
+    lastContact: "30 minutes ago",
     nextFollowUp: "Today · 4:15 PM",
     createdAt: "4 days ago",
-    reportsCount: 8,
     hospitalRequests: 2,
+    reports: reports(["MRI", "CT", "Blood", "Passport", "Prescription"]),
+    estimatedValue: money("AED", 245000, 22.7),
+    nextAction: { type: "Generate Proposal", due: "Today · 4:15 PM", priority: "Critical" },
     notes: "Donor evaluation pending. Family in Dubai.",
   },
   {
@@ -341,17 +481,20 @@ const LEADS: Lead[] = [
     country: "Bahrain",
     language: "Arabic",
     source: "Instagram",
-    type: "Diagnostics",
-    disease: "Full Health Check",
+    caseType: "Health Check-up",
+    disease: "Executive Health Package",
     stage: "Reports Requested",
     status: "Waiting Reports",
     coordinator: { name: "Sneha P.", initials: "SP" },
     priority: "Low",
-    lastContact: "1d ago",
+    urgency: "Low",
+    lastContact: "Yesterday",
     nextFollowUp: "Fri · 11:00 AM",
     createdAt: "6 days ago",
-    reportsCount: 0,
     hospitalRequests: 0,
+    reports: reports(["Passport"]),
+    estimatedValue: money("BHD", 480, 220.5),
+    nextAction: { type: "Request Reports", due: "Fri · 11:00 AM", priority: "Low" },
     notes: "Requested prior blood work reports.",
   },
   {
@@ -362,17 +505,20 @@ const LEADS: Lead[] = [
     country: "Oman",
     language: "Arabic",
     source: "WhatsApp",
-    type: "Admission",
+    caseType: "Admission",
     disease: "Pediatric Cardiac",
     stage: "Converted to Case",
     status: "Converted",
     coordinator: { name: "Anjali R.", initials: "AR" },
     priority: "High",
+    urgency: "High",
     lastContact: "Today",
     nextFollowUp: "—",
     createdAt: "8 days ago",
-    reportsCount: 5,
     hospitalRequests: 2,
+    reports: reports(["MRI", "CT", "Blood", "Passport", "Prescription"]),
+    estimatedValue: money("OMR", 4200, 216.3),
+    nextAction: { type: "Follow-up Today", due: "Today", priority: "Medium" },
     notes: "Converted to Case RY-2158. Admission scheduled.",
   },
   {
@@ -383,17 +529,20 @@ const LEADS: Lead[] = [
     country: "Qatar",
     language: "Arabic",
     source: "Meta Ads",
-    type: "Second Opinion",
+    caseType: "Second Opinion",
     disease: "Fertility (IVF)",
     stage: "New",
     status: "New",
     coordinator: { name: "Vikram S.", initials: "VS" },
     priority: "Medium",
-    lastContact: "—",
+    urgency: "Medium",
+    lastContact: "45 minutes ago",
     nextFollowUp: "Today · 6:00 PM",
-    createdAt: "45m ago",
-    reportsCount: 0,
+    createdAt: "45 minutes ago",
     hospitalRequests: 0,
+    reports: reports([]),
+    estimatedValue: null,
+    nextAction: { type: "Call Patient", due: "Today · 6:00 PM", priority: "Medium" },
     notes: "Landed via Meta ad campaign · Kerala IVF.",
   },
   {
@@ -404,17 +553,20 @@ const LEADS: Lead[] = [
     country: "UAE",
     language: "Arabic",
     source: "Walk-In",
-    type: "Follow-up",
+    caseType: "Follow-up",
     disease: "Post-op Ortho",
     stage: "Patient Decision",
     status: "Proposal",
     coordinator: { name: "Rahul M.", initials: "RM" },
     priority: "Medium",
-    lastContact: "3h ago",
+    urgency: "Medium",
+    lastContact: "3 hours ago",
     nextFollowUp: "Tomorrow · 9:00 AM",
     createdAt: "9 days ago",
-    reportsCount: 2,
     hospitalRequests: 1,
+    reports: reports(["Blood", "Prescription"]),
+    estimatedValue: money("AED", 9800, 22.7),
+    nextAction: { type: "Follow-up Today", due: "Tomorrow · 9:00 AM", priority: "Medium" },
     notes: "Comparing two follow-up plans. Awaiting family decision.",
   },
   {
@@ -425,43 +577,89 @@ const LEADS: Lead[] = [
     country: "Oman",
     language: "Arabic",
     source: "Referral Partner",
-    type: "Surgery",
-    disease: "Bariatric",
+    caseType: "Medical Package",
+    disease: "Bariatric Package",
     stage: "Closed",
     status: "Lost",
     coordinator: { name: "Vikram S.", initials: "VS" },
     priority: "Low",
-    lastContact: "5d ago",
+    urgency: "Low",
+    lastContact: "5 days ago",
     nextFollowUp: "—",
     createdAt: "22 days ago",
-    reportsCount: 1,
     hospitalRequests: 0,
+    reports: reports(["Passport"]),
+    estimatedValue: null,
+    nextAction: { type: "Call Patient", due: "—", priority: "Low" },
     notes: "Chose local hospital. Marked as lost with reason.",
   },
 ];
 
 /* ---------------------------------------------------------------- */
-/*  Pipeline definition                                             */
+/*  Funnel definition                                               */
 /* ---------------------------------------------------------------- */
 
-interface PipelineStage {
-  key: Stage;
-  color: string;
+interface FunnelStage {
+  key: string;
+  label: string;
+  /** Filter predicate against Lead to compute count. */
+  match: (l: Lead) => boolean;
+  /** Optional stage that maps to Lead.stage for filtering. */
+  stageKey?: Stage;
+  tone: string;
   dot: string;
 }
 
-const PIPELINE: PipelineStage[] = [
-  { key: "New", color: "bg-info/10 text-info", dot: "bg-info" },
-  { key: "Contacted", color: "bg-primary/10 text-primary", dot: "bg-primary" },
-  { key: "Reports Requested", color: "bg-warning/10 text-warning", dot: "bg-warning" },
-  { key: "Reports Received", color: "bg-warning/10 text-warning", dot: "bg-warning" },
-  { key: "Medical Review", color: "bg-secondary/15 text-secondary-foreground", dot: "bg-secondary" },
-  { key: "Hospital Opinion Requested", color: "bg-info/10 text-info", dot: "bg-info" },
-  { key: "Opinion Received", color: "bg-info/10 text-info", dot: "bg-info" },
-  { key: "Proposal Generated", color: "bg-accent/15 text-accent-foreground", dot: "bg-accent" },
-  { key: "Patient Decision", color: "bg-accent/15 text-accent-foreground", dot: "bg-accent" },
-  { key: "Converted to Case", color: "bg-success/10 text-success", dot: "bg-success" },
-  { key: "Closed", color: "bg-muted text-muted-foreground", dot: "bg-muted-foreground/50" },
+const FUNNEL: FunnelStage[] = [
+  { key: "total", label: "Total Leads", match: () => true, tone: "bg-info/10 text-info", dot: "bg-info" },
+  {
+    key: "reports-received",
+    label: "Reports Received",
+    stageKey: "Reports Received",
+    match: (l) => ["Reports Received", "Medical Review", "Hospital Opinion Requested", "Opinion Received", "Proposal Generated", "Patient Decision", "Converted to Case"].includes(l.stage),
+    tone: "bg-warning/10 text-warning",
+    dot: "bg-warning",
+  },
+  {
+    key: "medical-review",
+    label: "Medical Review",
+    stageKey: "Medical Review",
+    match: (l) => ["Medical Review", "Hospital Opinion Requested", "Opinion Received", "Proposal Generated", "Patient Decision", "Converted to Case"].includes(l.stage),
+    tone: "bg-secondary/15 text-secondary-foreground",
+    dot: "bg-secondary",
+  },
+  {
+    key: "opinion-received",
+    label: "Hospital Opinion Received",
+    stageKey: "Opinion Received",
+    match: (l) => ["Opinion Received", "Proposal Generated", "Patient Decision", "Converted to Case"].includes(l.stage),
+    tone: "bg-info/10 text-info",
+    dot: "bg-info",
+  },
+  {
+    key: "proposal",
+    label: "Proposal Generated",
+    stageKey: "Proposal Generated",
+    match: (l) => ["Proposal Generated", "Patient Decision", "Converted to Case"].includes(l.stage),
+    tone: "bg-accent/15 text-accent-foreground",
+    dot: "bg-accent",
+  },
+  {
+    key: "decision",
+    label: "Patient Decision",
+    stageKey: "Patient Decision",
+    match: (l) => ["Patient Decision", "Converted to Case"].includes(l.stage),
+    tone: "bg-accent/15 text-accent-foreground",
+    dot: "bg-accent",
+  },
+  {
+    key: "converted",
+    label: "Converted to Case",
+    stageKey: "Converted to Case",
+    match: (l) => l.stage === "Converted to Case",
+    tone: "bg-success/10 text-success",
+    dot: "bg-success",
+  },
 ];
 
 /* ---------------------------------------------------------------- */
@@ -469,53 +667,62 @@ const PIPELINE: PipelineStage[] = [
 /* ---------------------------------------------------------------- */
 
 function LeadManagement() {
-  const [stageFilter, setStageFilter] = useState<Stage | "All">("All");
+  const [funnelFilter, setFunnelFilter] = useState<string>("total");
   const [country, setCountry] = useState<string>("all");
   const [language, setLanguage] = useState<string>("all");
   const [source, setSource] = useState<string>("all");
   const [coordinator, setCoordinator] = useState<string>("all");
   const [priority, setPriority] = useState<string>("all");
+  const [urgency, setUrgency] = useState<string>("all");
+  const [caseType, setCaseType] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [preview, setPreview] = useState<Lead | null>(null);
+  const [reportsFor, setReportsFor] = useState<Lead | null>(null);
 
-  const stageCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const s of PIPELINE) map[s.key] = 0;
-    for (const l of LEADS) map[l.stage] = (map[l.stage] ?? 0) + 1;
-    return map;
+  const total = LEADS.length;
+
+  const funnelCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const s of FUNNEL) m[s.key] = LEADS.filter(s.match).length;
+    return m;
   }, []);
 
-  const maxStage = Math.max(...Object.values(stageCounts), 1);
+  const activeFunnel = FUNNEL.find((f) => f.key === funnelFilter) ?? FUNNEL[0];
+
+  const coordinatorLoad = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const c of COORDINATORS) m[c] = 0;
+    for (const l of LEADS) {
+      if (l.status !== "Converted" && l.status !== "Lost") {
+        m[l.coordinator.name] = (m[l.coordinator.name] ?? 0) + 1;
+      }
+    }
+    return m;
+  }, []);
 
   const filtered = useMemo(() => {
     return LEADS.filter((l) => {
-      if (stageFilter !== "All" && l.stage !== stageFilter) return false;
+      if (!activeFunnel.match(l)) return false;
       if (country !== "all" && l.country !== country) return false;
       if (language !== "all" && l.language !== language) return false;
       if (source !== "all" && l.source !== source) return false;
       if (coordinator !== "all" && l.coordinator.name !== coordinator) return false;
       if (priority !== "all" && l.priority !== priority) return false;
+      if (urgency !== "all" && l.urgency !== urgency) return false;
+      if (caseType !== "all" && l.caseType !== caseType) return false;
       if (status !== "all" && l.status !== status) return false;
       if (search) {
         const q = search.toLowerCase();
-        const hay = [
-          l.name,
-          l.id,
-          l.phone,
-          l.whatsapp,
-          l.disease,
-          l.country,
-          l.coordinator.name,
-        ]
+        const hay = [l.name, l.id, l.phone, l.whatsapp, l.disease, l.country, l.coordinator.name]
           .join(" ")
           .toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [stageFilter, country, language, source, coordinator, priority, status, search]);
+  }, [activeFunnel, country, language, source, coordinator, priority, urgency, caseType, status, search]);
 
   const allSelected = filtered.length > 0 && filtered.every((l) => selected.has(l.id));
   const someSelected = selected.size > 0 && !allSelected;
@@ -536,6 +743,7 @@ function LeadManagement() {
   const countries = Array.from(new Set(LEADS.map((l) => l.country)));
   const languages = Array.from(new Set(LEADS.map((l) => l.language)));
   const sources = Array.from(new Set(LEADS.map((l) => l.source)));
+  const caseTypes = Array.from(new Set(LEADS.map((l) => l.caseType)));
 
   return (
     <>
@@ -562,7 +770,7 @@ function LeadManagement() {
       />
 
       {/* KPI cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard label="New Leads Today" value="14" delta={{ value: "+22%", trend: "up" }} hint="last 24h" icon={UserPlus} tone="primary" />
         <StatCard label="Uncontacted Leads" value="9" delta={{ value: "+3", trend: "up" }} hint="awaiting first touch" icon={Clock} tone="warning" />
         <StatCard label="Reports Requested" value="21" delta={{ value: "+5", trend: "up" }} hint="documents pending" icon={FileText} tone="info" />
@@ -574,14 +782,14 @@ function LeadManagement() {
         <StatCard label="Lost Leads" value="5" delta={{ value: "-2", trend: "down" }} hint="last 7 days" icon={XCircle} tone="warning" />
       </div>
 
-      {/* Pipeline */}
+      {/* Conversion funnel */}
       <Widget
         className="mt-6"
-        title="Lead Pipeline"
-        description="Click any stage to filter the table below"
+        title="Lead Conversion Funnel"
+        description="Click any stage to filter the leads below"
         actions={
-          stageFilter !== "All" ? (
-            <Button variant="ghost" size="sm" onClick={() => setStageFilter("All")}>
+          funnelFilter !== "total" ? (
+            <Button variant="ghost" size="sm" onClick={() => setFunnelFilter("total")}>
               Clear filter
             </Button>
           ) : null
@@ -589,16 +797,16 @@ function LeadManagement() {
       >
         <ScrollArea>
           <div className="flex min-w-full items-stretch gap-2 pb-1">
-            {PIPELINE.map((stage, idx) => {
-              const count = stageCounts[stage.key] ?? 0;
-              const pct = Math.round((count / maxStage) * 100);
-              const active = stageFilter === stage.key;
+            {FUNNEL.map((stage, idx) => {
+              const count = funnelCounts[stage.key] ?? 0;
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+              const active = funnelFilter === stage.key;
               return (
                 <button
                   key={stage.key}
-                  onClick={() => setStageFilter(active ? "All" : stage.key)}
+                  onClick={() => setFunnelFilter(active ? "total" : stage.key)}
                   className={cn(
-                    "surface-card group relative flex min-w-[160px] flex-1 flex-col justify-between p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elegant)] focus:outline-none focus:ring-2 focus:ring-primary/40",
+                    "surface-card group relative flex min-w-[170px] flex-1 flex-col justify-between p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-elegant)] focus:outline-none focus:ring-2 focus:ring-primary/40",
                     active && "ring-2 ring-primary/50",
                   )}
                 >
@@ -609,14 +817,15 @@ function LeadManagement() {
                         {String(idx + 1).padStart(2, "0")}
                       </span>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-muted-foreground">
+                      <Percent className="h-2.5 w-2.5" />
+                      {pct}
+                    </span>
                   </div>
                   <div className="mt-2">
-                    <div className="font-numeric text-2xl font-semibold text-foreground">
-                      {count}
-                    </div>
+                    <div className="font-numeric text-2xl font-semibold text-foreground">{count}</div>
                     <div className="mt-0.5 line-clamp-2 text-[11px] font-medium text-foreground/80">
-                      {stage.key}
+                      {stage.label}
                     </div>
                   </div>
                   <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted">
@@ -647,6 +856,13 @@ function LeadManagement() {
           <FilterSelect value={country} onChange={setCountry} placeholder="Country" options={countries} />
           <FilterSelect value={language} onChange={setLanguage} placeholder="Language" options={languages} />
           <FilterSelect value={source} onChange={setSource} placeholder="Source" options={sources} />
+          <FilterSelect value={caseType} onChange={setCaseType} placeholder="Case Type" options={caseTypes} />
+          <FilterSelect
+            value={urgency}
+            onChange={setUrgency}
+            placeholder="Urgency"
+            options={["Critical", "Emergency", "High", "Medium", "Low"]}
+          />
           <FilterSelect
             value={coordinator}
             onChange={setCoordinator}
@@ -679,12 +895,9 @@ function LeadManagement() {
           </Button>
         </div>
 
-        {/* Bulk actions */}
         {selected.size > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-            <span className="text-xs font-semibold text-primary">
-              {selected.size} selected
-            </span>
+            <span className="text-xs font-semibold text-primary">{selected.size} selected</span>
             <div className="ml-auto flex flex-wrap items-center gap-1.5">
               <Button size="sm" variant="outline" className="h-7"><UserCheck className="h-3.5 w-3.5" /> Assign</Button>
               <Button size="sm" variant="outline" className="h-7"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</Button>
@@ -700,7 +913,7 @@ function LeadManagement() {
       <div className="mt-6 grid gap-4 xl:grid-cols-4">
         <Widget
           title="Leads"
-          description={`${filtered.length} of ${LEADS.length} enquiries`}
+          description={`${filtered.length} of ${LEADS.length} enquiries · ${activeFunnel.label}`}
           className="xl:col-span-3"
           contentClassName="p-0"
           actions={
@@ -726,27 +939,23 @@ function LeadManagement() {
                     <TableHead>Lead ID</TableHead>
                     <TableHead>Patient</TableHead>
                     <TableHead>Country</TableHead>
-                    <TableHead>Language</TableHead>
+                    <TableHead>Case Type</TableHead>
                     <TableHead>Source</TableHead>
-                    <TableHead>Disease</TableHead>
-                    <TableHead>Stage</TableHead>
+                    <TableHead>Urgency</TableHead>
+                    <TableHead>Reports</TableHead>
+                    <TableHead>Est. Value</TableHead>
                     <TableHead>Coordinator</TableHead>
-                    <TableHead>Priority</TableHead>
+                    <TableHead>Next Action</TableHead>
                     <TableHead>Last Contact</TableHead>
-                    <TableHead>Next Follow-up</TableHead>
-                    <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((l) => {
                     const SourceIcon = SOURCE_ICON[l.source];
+                    const ActionIcon = NEXT_ACTION_ICON[l.nextAction.type];
                     return (
-                      <TableRow
-                        key={l.id}
-                        className="cursor-pointer"
-                        onClick={() => setPreview(l)}
-                      >
+                      <TableRow key={l.id} className="cursor-pointer" onClick={() => setPreview(l)}>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             checked={selected.has(l.id)}
@@ -754,9 +963,7 @@ function LeadManagement() {
                             aria-label={`Select ${l.name}`}
                           />
                         </TableCell>
-                        <TableCell className="font-numeric text-xs text-muted-foreground">
-                          {l.id}
-                        </TableCell>
+                        <TableCell className="font-numeric text-xs text-muted-foreground">{l.id}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
@@ -766,47 +973,73 @@ function LeadManagement() {
                             </Avatar>
                             <div className="min-w-0">
                               <div className="font-medium text-foreground">{l.name}</div>
-                              <div className="text-[11px] text-muted-foreground">{l.type}</div>
+                              <div className="text-[11px] text-muted-foreground">{l.disease}</div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                          <span
+                            className="inline-flex items-center gap-1.5 text-muted-foreground"
+                            title={l.country}
+                          >
                             <span aria-hidden className="text-base leading-none">
                               {countryFlag(l.country)}
                             </span>
-                            {l.country}
+                            <span className="text-xs">{l.country}</span>
                           </span>
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{l.language}</TableCell>
                         <TableCell>
-                          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <CaseTypeBadge type={l.caseType} />
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+                            title={l.source}
+                          >
                             <SourceIcon className="h-3.5 w-3.5" />
-                            {l.source}
+                            <span className="hidden xl:inline">{l.source}</span>
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm text-foreground">{l.disease}</TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="whitespace-nowrap font-normal">
-                            {l.stage}
-                          </Badge>
+                          <UrgencyBadge level={l.urgency} />
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <MissingReportsIndicator
+                            reports={l.reports}
+                            onClick={() => setReportsFor(l)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <MoneyCell money={l.estimatedValue} />
+                        </TableCell>
+                        <TableCell>
+                          <CoordinatorCell
+                            name={l.coordinator.name}
+                            initials={l.coordinator.initials}
+                            load={coordinatorLoad[l.coordinator.name] ?? 0}
+                          />
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
-                                {l.coordinator.initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs text-muted-foreground">
-                              {l.coordinator.name}
+                            <span
+                              className={cn(
+                                "grid h-6 w-6 shrink-0 place-items-center rounded-md",
+                                PRIORITY_STYLES[l.nextAction.priority],
+                              )}
+                            >
+                              <ActionIcon className="h-3 w-3" />
                             </span>
+                            <div className="min-w-0">
+                              <div className="truncate text-xs font-medium text-foreground">
+                                {l.nextAction.type}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground">
+                                {l.nextAction.due}
+                              </div>
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell><PriorityBadge level={l.priority} /></TableCell>
                         <TableCell className="text-xs text-muted-foreground">{l.lastContact}</TableCell>
-                        <TableCell className="text-xs text-foreground">{l.nextFollowUp}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{l.createdAt}</TableCell>
                         <TableCell onClick={(e) => e.stopPropagation()} className="text-right">
                           <RowActions />
                         </TableCell>
@@ -838,19 +1071,16 @@ function LeadManagement() {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-sm font-medium text-foreground">
-                          {l.name}
-                        </span>
+                        <span className="truncate text-sm font-medium text-foreground">{l.name}</span>
                         <span className="shrink-0 text-[11px] text-muted-foreground">
                           {l.createdAt}
                         </span>
                       </div>
                       <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <span aria-hidden>{countryFlag(l.country)}</span>
-                        <span>{l.disease}</span>
+                        <span className="truncate">{l.disease}</span>
                         <span>·</span>
                         <SourceIcon className="h-3 w-3" />
-                        <span>{l.source}</span>
                       </div>
                     </div>
                   </li>
@@ -873,9 +1103,7 @@ function LeadManagement() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-sm font-medium text-foreground">
-                          {l.name}
-                        </span>
+                        <span className="truncate text-sm font-medium text-foreground">{l.name}</span>
                         <span className="shrink-0 font-numeric text-[11px] text-muted-foreground">
                           {l.nextFollowUp.replace("Today · ", "")}
                         </span>
@@ -902,10 +1130,10 @@ function LeadManagement() {
               {[
                 { icon: Sparkles, label: "Lead Summary" },
                 { icon: AlertTriangle, label: "Urgency Detection" },
-                { icon: Copy, label: "Duplicate Detection" },
                 { icon: FileText, label: "Missing Reports" },
+                { icon: Copy, label: "Duplicate Detection" },
+                { icon: Percent, label: "Conversion Probability" },
                 { icon: BrainCircuit, label: "Recommended Next Action" },
-                { icon: Languages, label: "Language Detection" },
               ].map((a) => (
                 <li
                   key={a.label}
@@ -913,7 +1141,7 @@ function LeadManagement() {
                 >
                   <a.icon className="h-3.5 w-3.5" />
                   <span>{a.label}</span>
-                  <span className="ml-auto text-[10px] uppercase tracking-wider">Reserved</span>
+                  <span className="ml-auto text-[10px] uppercase tracking-wider">Module 2.6</span>
                 </li>
               ))}
             </ul>
@@ -924,10 +1152,151 @@ function LeadManagement() {
       {/* Quick Preview drawer */}
       <Sheet open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
-          {preview && <LeadPreview lead={preview} />}
+          {preview && (
+            <LeadPreview
+              lead={preview}
+              onOpenReports={() => setReportsFor(preview)}
+            />
+          )}
         </SheetContent>
       </Sheet>
+
+      {/* Missing reports checklist dialog */}
+      <Dialog open={!!reportsFor} onOpenChange={(o) => !o && setReportsFor(null)}>
+        <DialogContent className="sm:max-w-md">
+          {reportsFor && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Missing Reports — {reportsFor.name}</DialogTitle>
+                <DialogDescription>
+                  Checklist of required documents for this enquiry. Full upload flow ships in Module 2.4.
+                </DialogDescription>
+              </DialogHeader>
+              <ul className="mt-2 space-y-2">
+                {REPORT_KEYS.map((k) => {
+                  const have = reportsFor.reports[k];
+                  return (
+                    <li
+                      key={k}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Checkbox checked={have} disabled aria-label={k} />
+                        <span className="text-sm font-medium text-foreground">{k}</span>
+                      </div>
+                      {have ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-success">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Received
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-destructive">
+                          <XCircle className="h-3.5 w-3.5" /> Missing
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-2 flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => setReportsFor(null)}>
+                  Close
+                </Button>
+                <Button size="sm">
+                  <MessageCircle className="h-4 w-4" /> Request via WhatsApp
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+/*  Cell components                                                 */
+/* ---------------------------------------------------------------- */
+
+function MissingReportsIndicator({
+  reports,
+  onClick,
+}: {
+  reports: Record<ReportKey, boolean>;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-wrap items-center gap-1 rounded-md border border-transparent px-1 py-0.5 transition-colors hover:border-border hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+      title="Open missing reports checklist"
+    >
+      {REPORT_KEYS.map((k) => {
+        const have = reports[k];
+        return (
+          <span
+            key={k}
+            className={cn(
+              "inline-flex items-center gap-0.5 rounded-sm px-1 text-[10px] font-medium",
+              have ? "text-success" : "text-destructive/80",
+            )}
+          >
+            {k}
+            {have ? (
+              <CheckCircle2 className="h-3 w-3" />
+            ) : (
+              <XCircle className="h-3 w-3" />
+            )}
+          </span>
+        );
+      })}
+    </button>
+  );
+}
+
+function MoneyCell({ money }: { money: MoneyAmount | null }) {
+  if (!money) {
+    return <span className="text-[11px] italic text-muted-foreground">Not Estimated</span>;
+  }
+  const orig = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: money.originalCurrency,
+    maximumFractionDigits: 0,
+  }).format(money.originalAmount);
+  const inr = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(money.convertedInrAmount);
+  return (
+    <div className="leading-tight">
+      <div className="font-numeric text-xs font-semibold text-foreground">{orig}</div>
+      <div className="font-numeric text-[10px] text-muted-foreground">≈ {inr}</div>
+    </div>
+  );
+}
+
+function CoordinatorCell({
+  name,
+  initials: init,
+  load,
+}: {
+  name: string;
+  initials: string;
+  load: number;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar className="h-7 w-7">
+        <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
+          {init}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 leading-tight">
+        <div className="truncate text-xs font-medium text-foreground">{name}</div>
+        <div className="text-[10px] text-muted-foreground">{load} active</div>
+      </div>
+    </div>
   );
 }
 
@@ -1016,21 +1385,26 @@ function EmptyState() {
 /*  Preview drawer                                                  */
 /* ---------------------------------------------------------------- */
 
-function LeadPreview({ lead }: { lead: Lead }) {
+function LeadPreview({ lead, onOpenReports }: { lead: Lead; onOpenReports: () => void }) {
   const SourceIcon = SOURCE_ICON[lead.source];
+  const ActionIcon = NEXT_ACTION_ICON[lead.nextAction.type];
   return (
     <>
       <SheetHeader className="space-y-1 text-left">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-numeric text-[11px] text-muted-foreground">{lead.id}</span>
           <StatusBadge status={lead.status} />
           <PriorityBadge level={lead.priority} />
+          <UrgencyBadge level={lead.urgency} />
         </div>
         <SheetTitle className="font-display text-xl">{lead.name}</SheetTitle>
         <SheetDescription className="flex items-center gap-1.5">
           <span aria-hidden>{countryFlag(lead.country)}</span>
           {lead.country} · {lead.disease}
         </SheetDescription>
+        <div className="pt-1">
+          <CaseTypeBadge type={lead.caseType} />
+        </div>
       </SheetHeader>
 
       {/* Quick actions */}
@@ -1039,6 +1413,25 @@ function LeadPreview({ lead }: { lead: Lead }) {
         <QuickAction icon={MessageCircle} label="WhatsApp" />
         <QuickAction icon={Mail} label="Email" />
         <QuickAction icon={ArrowUpRight} label="Open" />
+      </div>
+
+      {/* Next action banner */}
+      <div className="mt-4 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+        <span
+          className={cn(
+            "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+            PRIORITY_STYLES[lead.nextAction.priority],
+          )}
+        >
+          <ActionIcon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Next Action
+          </div>
+          <div className="text-sm font-semibold text-foreground">{lead.nextAction.type}</div>
+          <div className="text-[11px] text-muted-foreground">{lead.nextAction.due}</div>
+        </div>
       </div>
 
       {/* Details */}
@@ -1059,20 +1452,37 @@ function LeadPreview({ lead }: { lead: Lead }) {
               </span>
             }
           />
-          <PreviewRow label="Type" value={lead.type} />
+          <PreviewRow label="Case Type" value={<CaseTypeBadge type={lead.caseType} />} />
+          <PreviewRow label="Urgency" value={<UrgencyBadge level={lead.urgency} />} />
           <PreviewRow label="Disease" value={lead.disease} />
           <PreviewRow label="Current Stage" value={lead.stage} />
         </PreviewSection>
+
+        <PreviewSection title="Financials">
+          <PreviewRow
+            label="Expected Treatment Value"
+            value={<MoneyCell money={lead.estimatedValue} />}
+          />
+        </PreviewSection>
+
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Missing Reports
+            </div>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[11px]" onClick={onOpenReports}>
+              Open checklist
+            </Button>
+          </div>
+          <div className="rounded-lg border border-border p-2">
+            <MissingReportsIndicator reports={lead.reports} onClick={onOpenReports} />
+          </div>
+        </div>
 
         <PreviewSection title="Coordination">
           <PreviewRow label="Coordinator" value={lead.coordinator.name} />
           <PreviewRow label="Last Contact" value={lead.lastContact} />
           <PreviewRow label="Next Follow-up" value={lead.nextFollowUp} />
-        </PreviewSection>
-
-        <PreviewSection title="Medical">
-          <PreviewRow label="Reports Uploaded" value={String(lead.reportsCount)} />
-          <PreviewRow label="Hospital Requests" value={String(lead.hospitalRequests)} />
         </PreviewSection>
 
         <div>
@@ -1123,9 +1533,7 @@ function PreviewSection({
       <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
       </div>
-      <div className="divide-y divide-border rounded-lg border border-border">
-        {children}
-      </div>
+      <div className="divide-y divide-border rounded-lg border border-border">{children}</div>
     </div>
   );
 }
