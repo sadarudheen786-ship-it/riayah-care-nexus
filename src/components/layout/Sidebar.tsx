@@ -4,6 +4,7 @@ import {
   Radar,
   UserPlus,
   Users,
+  FolderKanban,
   Brain,
   Activity,
   Building2,
@@ -35,6 +36,7 @@ const NAV: NavItem[] = [
   { label: "Executive Command Center", to: "/command-center", icon: Radar, group: "Workspace" },
   { label: "Lead Management", to: "/leads", icon: UserPlus, group: "Workspace" },
   { label: "Patients", to: "/patients", icon: Users, group: "Workspace" },
+  { label: "Case Workspace", to: "/case-workspace", icon: FolderKanban, group: "Workspace" },
 
   { label: "Medical Intelligence", to: "/medical-intelligence", icon: Brain, group: "Intelligence" },
   { label: "Disease Engine", to: "/disease-engine", icon: Activity, group: "Intelligence" },
