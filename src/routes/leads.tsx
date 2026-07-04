@@ -45,6 +45,7 @@ import {
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";
 import { Widget } from "@/components/common/Widget";
+import { WorkflowStageBoard } from "@/components/workflow/WorkflowEngine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -840,6 +841,36 @@ function LeadManagement() {
           </div>
         </ScrollArea>
       </Widget>
+
+      {/* Intelligent Workflow Engine – pipeline snapshot */}
+      <Widget
+        className="mt-6"
+        title="Intelligent Workflow Engine"
+        description="Live SLA snapshot of every stage from first contact to case completion."
+        actions={
+          <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+            22 stages · 3 clinical paths
+          </Badge>
+        }
+      >
+        <WorkflowStageBoard
+          metrics={[
+            { stageId: "new_lead", count: 18, overdue: 2 },
+            { stageId: "contacted", count: 24, overdue: 1 },
+            { stageId: "reports_requested", count: 31, overdue: 4 },
+            { stageId: "reports_received", count: 14, overdue: 0 },
+            { stageId: "medical_review", count: 9, overdue: 1 },
+            { stageId: "hospital_opinion_requested", count: 12, overdue: 3 },
+            { stageId: "hospital_opinion_received", count: 7, overdue: 0 },
+            { stageId: "quotation_generated", count: 8, overdue: 1 },
+            { stageId: "patient_decision", count: 11, overdue: 2 },
+            { stageId: "visa_processing", count: 6, overdue: 1 },
+            { stageId: "flight_booked", count: 4, overdue: 0 },
+            { stageId: "arrival", count: 3, overdue: 0 },
+          ]}
+        />
+      </Widget>
+
 
       {/* Sticky filters */}
       <div className="sticky top-16 z-20 -mx-4 mt-6 border-y border-border bg-background/85 px-4 py-3 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-4">

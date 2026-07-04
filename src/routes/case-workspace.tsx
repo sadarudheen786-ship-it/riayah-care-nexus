@@ -70,6 +70,12 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { countryFlag } from "@/lib/flags";
 import { cn } from "@/lib/utils";
+import {
+  WorkflowSummaryPanel,
+  WorkflowEngineView,
+  useDemoWorkflowState,
+} from "@/components/workflow/WorkflowEngine";
+import type { WorkflowState } from "@/lib/workflow";
 
 export const Route = createFileRoute("/case-workspace")({
   head: () => ({
@@ -285,8 +291,25 @@ const IS_ACTIVE = ACTIVE_STAGES.includes(CASE.currentStage);
 // Component
 // ────────────────────────────────────────────────────────────────
 
+const INITIAL_WORKFLOW: WorkflowState = {
+  pathId: "surgery",
+  currentStageId: "hospital_opinion_received",
+  progress: {
+    hospital_opinion_received: {
+      stageId: "hospital_opinion_received",
+      status: "in_progress",
+      entryDate: new Date(Date.now() - 6 * 3600_000).toISOString(),
+      assignedCoordinator: "Fatima Rahman",
+      uploadedDocuments: ["Hospital Opinion"],
+      completedTasks: ["Translate opinion to patient language"],
+      waitingHours: 6,
+    },
+  },
+};
+
 function CaseWorkspace() {
   const [tab, setTab] = useState("overview");
+  const workflow = useDemoWorkflowState(INITIAL_WORKFLOW);
 
   return (
     <div className="space-y-6">
@@ -326,6 +349,7 @@ function CaseWorkspace() {
             <div className="surface-card p-1.5">
               <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-transparent p-0">
                 <WorkspaceTab value="overview" icon={LayoutGrid} label="Overview" />
+                <WorkspaceTab value="workflow" icon={Radar} label="Workflow" />
                 <WorkspaceTab value="medical" icon={Activity} label="Medical Reports" />
                 <WorkspaceTab value="communication" icon={MessagesSquare} label="Communication" />
                 <WorkspaceTab value="tasks" icon={ClipboardList} label="Tasks" />
@@ -362,8 +386,24 @@ function CaseWorkspace() {
               </TabsList>
             </div>
 
-            <TabsContent value="overview" className="m-0">
+            <TabsContent value="overview" className="m-0 space-y-4">
+              <WorkflowSummaryPanel
+                state={workflow.state}
+                caseHealth={{ label: "Needs Attention", score: 74 }}
+                revenueProbability={62}
+                expectedRevenueInr={2_484_000}
+                onOpenEngine={() => setTab("workflow")}
+              />
               <OverviewTab />
+            </TabsContent>
+            <TabsContent value="workflow" className="m-0">
+              <WorkflowEngineView
+                state={workflow.state}
+                onPathChange={workflow.setPath}
+                onAdvance={workflow.advance}
+                onToggleTask={workflow.toggleTask}
+                onUploadDocument={workflow.uploadDocument}
+              />
             </TabsContent>
             <TabsContent value="medical" className="m-0">
               <MedicalTab />
