@@ -386,8 +386,24 @@ function CaseWorkspace() {
               </TabsList>
             </div>
 
-            <TabsContent value="overview" className="m-0">
+            <TabsContent value="overview" className="m-0 space-y-4">
+              <WorkflowSummaryPanel
+                state={workflow.state}
+                caseHealth={{ label: "Needs Attention", score: 74 }}
+                revenueProbability={62}
+                expectedRevenueInr={2_484_000}
+                onOpenEngine={() => setTab("workflow")}
+              />
               <OverviewTab />
+            </TabsContent>
+            <TabsContent value="workflow" className="m-0">
+              <WorkflowEngineView
+                state={workflow.state}
+                onPathChange={workflow.setPath}
+                onAdvance={workflow.advance}
+                onToggleTask={workflow.toggleTask}
+                onUploadDocument={workflow.uploadDocument}
+              />
             </TabsContent>
             <TabsContent value="medical" className="m-0">
               <MedicalTab />
