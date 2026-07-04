@@ -821,7 +821,7 @@ function ExecutiveIntelligence({ onNavigate }: { onNavigate: (tab: string) => vo
           </div>
           <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] p-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
-              <nbaIcon.render as any />
+              <nbaIcon className="h-5 w-5" />
             </div>
             <div className="min-w-0">
               <div className="text-sm font-semibold text-foreground">{nba.label}</div>
