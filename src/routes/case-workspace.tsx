@@ -17,6 +17,7 @@ import {
   XCircle,
   Activity,
   Heart,
+  HeartPulse,
   AlertTriangle,
   FileImage,
   FileVideo,
@@ -41,7 +42,23 @@ import {
   ArrowRight,
   Wallet as WalletIcon,
   Flag,
+  Gauge,
+  Percent,
+  Timer,
+  TrendingUp,
+  Voicemail,
+  PhoneCall,
+  Radar,
+  ShieldCheck,
+  ChevronRight,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Widget } from "@/components/common/Widget";
 import { Button } from "@/components/ui/button";
