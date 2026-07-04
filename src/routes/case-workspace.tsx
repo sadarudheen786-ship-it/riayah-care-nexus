@@ -128,6 +128,22 @@ const CASE = {
   healthScore: "Needs Attention" as "Healthy" | "Needs Attention" | "Critical",
   hospital: "Aster Medcity, Kochi",
   doctor: "Dr. Rajesh Menon · Cardiothoracic Surgery",
+  priority: "High" as "Critical" | "High" | "Medium" | "Low",
+  nextBestAction: {
+    label: "Follow up with patient",
+    due: "Today · 4:00 PM",
+  },
+  expectedRevenue: {
+    originalCurrency: "AED" as const,
+    originalAmount: 82500,
+    convertedInrAmount: 18_562_500,
+    riayahRevenueInr: 1_856_250,
+  },
+  lastContact: {
+    channel: "WhatsApp",
+    at: "Today · 09:14",
+  },
+  waitingSinceDays: 3,
 };
 
 const ACTIVE_STAGES: Stage[] = [
