@@ -291,8 +291,25 @@ const IS_ACTIVE = ACTIVE_STAGES.includes(CASE.currentStage);
 // Component
 // ────────────────────────────────────────────────────────────────
 
+const INITIAL_WORKFLOW: WorkflowState = {
+  pathId: "surgery",
+  currentStageId: "hospital_opinion_received",
+  progress: {
+    hospital_opinion_received: {
+      stageId: "hospital_opinion_received",
+      status: "in_progress",
+      entryDate: new Date(Date.now() - 6 * 3600_000).toISOString(),
+      assignedCoordinator: "Fatima Rahman",
+      uploadedDocuments: ["Hospital Opinion"],
+      completedTasks: ["Translate opinion to patient language"],
+      waitingHours: 6,
+    },
+  },
+};
+
 function CaseWorkspace() {
   const [tab, setTab] = useState("overview");
+  const workflow = useDemoWorkflowState(INITIAL_WORKFLOW);
 
   return (
     <div className="space-y-6">
