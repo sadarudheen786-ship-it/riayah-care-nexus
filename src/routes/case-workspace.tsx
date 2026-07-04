@@ -349,6 +349,7 @@ function CaseWorkspace() {
             <div className="surface-card p-1.5">
               <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-transparent p-0">
                 <WorkspaceTab value="overview" icon={LayoutGrid} label="Overview" />
+                <WorkspaceTab value="workflow" icon={Radar} label="Workflow" />
                 <WorkspaceTab value="medical" icon={Activity} label="Medical Reports" />
                 <WorkspaceTab value="communication" icon={MessagesSquare} label="Communication" />
                 <WorkspaceTab value="tasks" icon={ClipboardList} label="Tasks" />
