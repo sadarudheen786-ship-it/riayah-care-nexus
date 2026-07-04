@@ -45,6 +45,7 @@ import {
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";
 import { Widget } from "@/components/common/Widget";
+import { WorkflowStageBoard } from "@/components/workflow/WorkflowEngine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
