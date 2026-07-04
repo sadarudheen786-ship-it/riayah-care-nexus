@@ -35,6 +35,12 @@ import {
   Download,
   Eye,
   Plus,
+  Clock,
+  Hourglass,
+  UserCircle2,
+  ArrowRight,
+  Wallet as WalletIcon,
+  Flag,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Widget } from "@/components/common/Widget";
