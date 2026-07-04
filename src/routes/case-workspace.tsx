@@ -147,20 +147,128 @@ const CASE = {
   doctor: "Dr. Rajesh Menon · Cardiothoracic Surgery",
   priority: "High" as "Critical" | "High" | "Medium" | "Low",
   nextBestAction: {
-    label: "Follow up with patient",
+    icon: "phone" as "phone" | "message" | "upload" | "file" | "plane" | "calendar" | "stethoscope",
+    label: "Follow up patient today",
+    detail: "WhatsApp Aster Medcity quotation follow-up to family",
     due: "Today · 4:00 PM",
+    priority: "High" as "Critical" | "High" | "Medium" | "Low",
   },
-  expectedRevenue: {
+  latestQuotation: {
+    hospital: "Aster Medcity",
+    approvedAt: "28 Jun 2026",
+    validUntil: "15 Jul 2026",
     originalCurrency: "AED" as const,
-    originalAmount: 82500,
-    convertedInrAmount: 18_562_500,
-    riayahRevenueInr: 1_856_250,
+    originalAmount: 82_500,
+    exchangeRate: 22.5,
+    convertedInr: 1_856_250,
+  },
+  revenueBreakdown: {
+    riayahServiceChargeInr: 250_000,
+    expectedHospitalCommissionInr: 185_625,
+    expectedReferralCommissionInr: 50_000,
+    otherRevenueInr: 0,
+    expectedNetRevenueInr: 485_625,
   },
   lastContact: {
     channel: "WhatsApp",
     at: "Today · 09:14",
   },
   waitingSinceDays: 3,
+  healthScoreDetail: {
+    overall: 68,
+    status: "Attention" as "Healthy" | "Attention" | "Critical",
+    categories: [
+      {
+        key: "medical",
+        label: "Medical",
+        score: 75,
+        items: [
+          { ok: true, text: "MRI Uploaded" },
+          { ok: true, text: "CT Uploaded" },
+          { ok: false, text: "Blood Report Missing" },
+        ],
+      },
+      {
+        key: "communication",
+        label: "Communication",
+        score: 55,
+        items: [
+          { ok: true, text: "WhatsApp yesterday" },
+          { ok: false, text: "Follow-up overdue" },
+        ],
+      },
+      {
+        key: "operations",
+        label: "Operations",
+        score: 65,
+        items: [
+          { ok: true, text: "Hospital opinion received" },
+          { ok: false, text: "Waiting 5 days" },
+        ],
+      },
+      {
+        key: "documents",
+        label: "Documents",
+        score: 70,
+        items: [
+          { ok: true, text: "Passport" },
+          { ok: true, text: "Quotation" },
+          { ok: false, text: "Visa pending" },
+        ],
+      },
+      {
+        key: "finance",
+        label: "Finance",
+        score: 72,
+        items: [
+          { ok: true, text: "Revenue calculated" },
+          { ok: false, text: "Payment pending" },
+        ],
+      },
+    ],
+  },
+  revenueProbability: {
+    probability: 87,
+    stage: "Hospital Opinion Received",
+    reason: "Patient engaged · quotation shared · awaiting decision",
+    expectedDecision: "5 Jul 2026",
+    expectedArrival: "18 Jul 2026",
+  },
+  communicationSummary: {
+    lastWhatsapp: "Today · 09:14",
+    lastCall: "1 Jul · 11:20",
+    lastEmail: "29 Jun · 16:02",
+    voiceNotes: 3,
+    unread: 2,
+    lastInternalNote: "Today · 08:41 · Fatima R.",
+    lastHospitalUpdate: "Yesterday · 14:22 · Aster",
+  },
+  sla: [
+    { label: "Hospital Opinion", status: "Met", remaining: "Completed", tone: "green" as const },
+    { label: "Quotation", status: "On Track", remaining: "1d left", tone: "green" as const },
+    { label: "Patient Decision", status: "At Risk", remaining: "6h left", tone: "yellow" as const },
+    { label: "Visa", status: "Overdue", remaining: "-1d", tone: "red" as const },
+    { label: "Travel", status: "Pending", remaining: "7d", tone: "green" as const },
+    { label: "Follow-up", status: "Scheduled", remaining: "14d", tone: "green" as const },
+  ],
+  financialSnapshot: {
+    hospitalBillInr: 1_856_250,
+    expensesInr: 80_000,
+    expectedProfitInr: 405_625,
+    outstandingInr: 1_856_250,
+    paymentStatus: "Not Started" as
+      | "Not Started"
+      | "Partial"
+      | "Paid"
+      | "Refunded",
+    collectionStatus: "Pending" as "Pending" | "In Progress" | "Complete",
+  },
+  forecast: {
+    d30: { revenue: 485_625, collections: 250_000, expenses: 80_000, profit: 155_625 },
+    d60: { revenue: 850_000, collections: 600_000, expenses: 150_000, profit: 300_000 },
+    d90: { revenue: 1_200_000, collections: 950_000, expenses: 220_000, profit: 530_000 },
+    confidence: 72,
+  },
 };
 
 const ACTIVE_STAGES: Stage[] = [
