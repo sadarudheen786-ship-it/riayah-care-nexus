@@ -187,6 +187,8 @@ function CaseWorkspace() {
         }
       />
 
+      <ExecutiveStatusBanner onNavigate={setTab} />
+
       <LifecycleTracker current={CASE.currentStage} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
