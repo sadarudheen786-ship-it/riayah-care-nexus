@@ -35,6 +35,12 @@ import {
   Download,
   Eye,
   Plus,
+  Clock,
+  Hourglass,
+  UserCircle2,
+  ArrowRight,
+  Wallet as WalletIcon,
+  Flag,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Widget } from "@/components/common/Widget";
@@ -122,6 +128,22 @@ const CASE = {
   healthScore: "Needs Attention" as "Healthy" | "Needs Attention" | "Critical",
   hospital: "Aster Medcity, Kochi",
   doctor: "Dr. Rajesh Menon · Cardiothoracic Surgery",
+  priority: "High" as "Critical" | "High" | "Medium" | "Low",
+  nextBestAction: {
+    label: "Follow up with patient",
+    due: "Today · 4:00 PM",
+  },
+  expectedRevenue: {
+    originalCurrency: "AED" as const,
+    originalAmount: 82500,
+    convertedInrAmount: 18_562_500,
+    riayahRevenueInr: 1_856_250,
+  },
+  lastContact: {
+    channel: "WhatsApp",
+    at: "Today · 09:14",
+  },
+  waitingSinceDays: 3,
 };
 
 const ACTIVE_STAGES: Stage[] = [
@@ -164,6 +186,8 @@ function CaseWorkspace() {
           </div>
         }
       />
+
+      <ExecutiveStatusBanner onNavigate={setTab} />
 
       <LifecycleTracker current={CASE.currentStage} />
 
@@ -254,8 +278,200 @@ function CaseWorkspace() {
 }
 
 // ────────────────────────────────────────────────────────────────
+// Executive Case Status Banner
+// ────────────────────────────────────────────────────────────────
+
+const PRIORITY_TONE: Record<
+  "Critical" | "High" | "Medium" | "Low",
+  { dot: string; badge: string }
+> = {
+  Critical: { dot: "bg-destructive", badge: "bg-destructive/15 text-destructive" },
+  High: { dot: "bg-warning", badge: "bg-warning/15 text-warning" },
+  Medium: { dot: "bg-info", badge: "bg-info/15 text-info" },
+  Low: { dot: "bg-muted-foreground", badge: "bg-muted text-muted-foreground" },
+};
+
+const inrFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+const originalCurrencyFormatter = (code: string) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: code,
+    maximumFractionDigits: 0,
+  });
+
+interface BannerKpiProps {
+  icon: typeof Phone;
+  label: string;
+  value: React.ReactNode;
+  hint?: React.ReactNode;
+  onClick?: () => void;
+  accent?: boolean;
+  className?: string;
+}
+
+function BannerKpi({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  onClick,
+  accent,
+  className,
+}: BannerKpiProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group flex min-w-0 flex-col items-start gap-1 rounded-xl border border-border/70 bg-card/60 p-3 text-left transition hover:-translate-y-0.5 hover:border-success/40 hover:bg-success/5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/40",
+        accent && "border-success/40 bg-success/5",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-3.5 w-3.5 text-success" />
+        {label}
+      </div>
+      <div className="min-w-0 text-sm font-semibold leading-tight text-foreground">{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
+    </button>
+  );
+}
+
+function ExecutiveStatusBanner({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const priorityTone = PRIORITY_TONE[CASE.priority];
+  const revenue = CASE.expectedRevenue;
+  const originalFormatted = originalCurrencyFormatter(revenue.originalCurrency).format(
+    revenue.originalAmount,
+  );
+
+  return (
+    <section className="sticky top-2 z-30">
+      <div className="surface-card border-success/25 bg-gradient-to-br from-success/[0.06] via-card to-card p-4 shadow-[var(--shadow-elegant)] backdrop-blur">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className={cn("h-2 w-2 animate-pulse rounded-full", priorityTone.dot)} />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-success">
+              Executive Case Status
+            </span>
+            <Badge
+              variant="outline"
+              className="border-border/70 bg-background/60 text-[10px] font-medium text-muted-foreground"
+            >
+              Live · {CASE.lastUpdated}
+            </Badge>
+          </div>
+          <Badge className={cn("gap-1 border-0", priorityTone.badge)}>
+            <Flag className="h-3 w-3" />
+            {CASE.priority} Priority
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
+          <BannerKpi
+            icon={Activity}
+            label="Case Status"
+            value={CASE.currentStatus}
+            hint="Current disposition"
+            onClick={() => onNavigate("overview")}
+          />
+          <BannerKpi
+            icon={LayoutGrid}
+            label="Workflow Stage"
+            value={CASE.currentStage}
+            hint={`Stage ${LIFECYCLE.indexOf(CASE.currentStage) + 1} of ${LIFECYCLE.length}`}
+            onClick={() => onNavigate("timeline")}
+          />
+          <BannerKpi
+            icon={ArrowRight}
+            label="Next Best Action"
+            value={CASE.nextBestAction.label}
+            hint={CASE.nextBestAction.due}
+            onClick={() => onNavigate("tasks")}
+            accent
+          />
+          <BannerKpi
+            icon={WalletIcon}
+            label="Expected Revenue"
+            value={
+              <div className="flex flex-col leading-tight">
+                <span className="font-numeric">{originalFormatted}</span>
+                <span className="font-numeric text-[11px] text-muted-foreground">
+                  {inrFormatter.format(revenue.convertedInrAmount)}
+                </span>
+              </div>
+            }
+            hint={
+              <span className="text-success">
+                Riayah · {inrFormatter.format(revenue.riayahRevenueInr)}
+              </span>
+            }
+            onClick={() => onNavigate("finance")}
+          />
+          <BannerKpi
+            icon={MessageCircle}
+            label="Last Contact"
+            value={CASE.lastContact.at}
+            hint={`via ${CASE.lastContact.channel}`}
+            onClick={() => onNavigate("communication")}
+          />
+          <BannerKpi
+            icon={Hourglass}
+            label="Waiting Since"
+            value={`${CASE.waitingSinceDays} days`}
+            hint="In current stage"
+            onClick={() => onNavigate("timeline")}
+          />
+          <BannerKpi
+            icon={UserCircle2}
+            label="Coordinator"
+            value={
+              <div className="flex items-center gap-1.5">
+                <Avatar className="h-5 w-5">
+                  <AvatarFallback className="bg-secondary/15 text-[9px] font-semibold text-secondary">
+                    {CASE.coordinator.initials}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate">{CASE.coordinator.name}</span>
+              </div>
+            }
+            hint="Assigned owner"
+          />
+          <BannerKpi
+            icon={Building2}
+            label="Hospital"
+            value={CASE.hospital}
+            hint="Handling facility"
+            onClick={() => onNavigate("hospital-opinions")}
+          />
+          <BannerKpi
+            icon={Stethoscope}
+            label="Doctor"
+            value={CASE.doctor.split(" · ")[0]}
+            hint={CASE.doctor.split(" · ")[1] ?? "Consulting"}
+            onClick={() => onNavigate("hospital-opinions")}
+          />
+          <BannerKpi
+            icon={Clock}
+            label="Case Age"
+            value={CASE.createdDate}
+            hint="Opened"
+            onClick={() => onNavigate("timeline")}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
 // Lifecycle tracker
 // ────────────────────────────────────────────────────────────────
+
 
 function LifecycleTracker({ current }: { current: Stage }) {
   const idx = LIFECYCLE.indexOf(current);
