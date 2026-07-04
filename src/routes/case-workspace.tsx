@@ -70,6 +70,12 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { countryFlag } from "@/lib/flags";
 import { cn } from "@/lib/utils";
+import {
+  WorkflowSummaryPanel,
+  WorkflowEngineView,
+  useDemoWorkflowState,
+} from "@/components/workflow/WorkflowEngine";
+import type { WorkflowState } from "@/lib/workflow";
 
 export const Route = createFileRoute("/case-workspace")({
   head: () => ({
