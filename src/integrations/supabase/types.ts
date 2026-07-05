@@ -146,9 +146,140 @@ export type Database = {
           },
         ]
       }
+      ai_logs: {
+        Row: {
+          case_id: string | null
+          cost_usd: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          latency_ms: number | null
+          model: string | null
+          prompt_id: string | null
+          request_payload: Json | null
+          response_payload: Json | null
+          status: Database["public"]["Enums"]["ai_log_status"]
+          tokens_input: number | null
+          tokens_output: number | null
+          user_id: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          prompt_id?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: Database["public"]["Enums"]["ai_log_status"]
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          prompt_id?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: Database["public"]["Enums"]["ai_log_status"]
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_logs_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_logs_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompts: {
+        Row: {
+          category: Database["public"]["Enums"]["ai_analysis_type"] | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          model: string | null
+          name: string
+          template: string
+          updated_at: string
+          variables: Json | null
+          version: number
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["ai_analysis_type"] | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          model?: string | null
+          name: string
+          template: string
+          updated_at?: string
+          variables?: Json | null
+          version?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["ai_analysis_type"] | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          model?: string | null
+          name?: string
+          template?: string
+          updated_at?: string
+          variables?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_prompts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           actual_arrival_date: string | null
+          ai_confidence_score: number | null
+          case_health_score: number | null
           case_number: string | null
           clinical_path: Database["public"]["Enums"]["clinical_path"] | null
           coordinator_id: string | null
@@ -160,12 +291,15 @@ export type Database = {
           discharge_date: string | null
           disease: string | null
           enquiry_date: string | null
+          estimated_stay_days: number | null
+          estimated_treatment_cost: number | null
           expected_arrival_date: string | null
           expected_decision_date: string | null
           expected_revenue: number | null
           expected_revenue_currency:
             | Database["public"]["Enums"]["currency_code"]
             | null
+          expected_surgery_date: string | null
           id: string
           lead_source: Database["public"]["Enums"]["lead_source"] | null
           medical_reviewer_id: string | null
@@ -174,6 +308,7 @@ export type Database = {
           primary_doctor_id: string | null
           primary_hospital_id: string | null
           probability: number | null
+          revenue_probability: number | null
           specialty: string | null
           status: Database["public"]["Enums"]["case_status"]
           target_country: string | null
@@ -183,6 +318,8 @@ export type Database = {
         }
         Insert: {
           actual_arrival_date?: string | null
+          ai_confidence_score?: number | null
+          case_health_score?: number | null
           case_number?: string | null
           clinical_path?: Database["public"]["Enums"]["clinical_path"] | null
           coordinator_id?: string | null
@@ -194,12 +331,15 @@ export type Database = {
           discharge_date?: string | null
           disease?: string | null
           enquiry_date?: string | null
+          estimated_stay_days?: number | null
+          estimated_treatment_cost?: number | null
           expected_arrival_date?: string | null
           expected_decision_date?: string | null
           expected_revenue?: number | null
           expected_revenue_currency?:
             | Database["public"]["Enums"]["currency_code"]
             | null
+          expected_surgery_date?: string | null
           id?: string
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           medical_reviewer_id?: string | null
@@ -208,6 +348,7 @@ export type Database = {
           primary_doctor_id?: string | null
           primary_hospital_id?: string | null
           probability?: number | null
+          revenue_probability?: number | null
           specialty?: string | null
           status?: Database["public"]["Enums"]["case_status"]
           target_country?: string | null
@@ -217,6 +358,8 @@ export type Database = {
         }
         Update: {
           actual_arrival_date?: string | null
+          ai_confidence_score?: number | null
+          case_health_score?: number | null
           case_number?: string | null
           clinical_path?: Database["public"]["Enums"]["clinical_path"] | null
           coordinator_id?: string | null
@@ -228,12 +371,15 @@ export type Database = {
           discharge_date?: string | null
           disease?: string | null
           enquiry_date?: string | null
+          estimated_stay_days?: number | null
+          estimated_treatment_cost?: number | null
           expected_arrival_date?: string | null
           expected_decision_date?: string | null
           expected_revenue?: number | null
           expected_revenue_currency?:
             | Database["public"]["Enums"]["currency_code"]
             | null
+          expected_surgery_date?: string | null
           id?: string
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           medical_reviewer_id?: string | null
@@ -242,6 +388,7 @@ export type Database = {
           primary_doctor_id?: string | null
           primary_hospital_id?: string | null
           probability?: number | null
+          revenue_probability?: number | null
           specialty?: string | null
           status?: Database["public"]["Enums"]["case_status"]
           target_country?: string | null
@@ -376,14 +523,270 @@ export type Database = {
           },
         ]
       }
+      countries: {
+        Row: {
+          created_at: string
+          dial_code: string | null
+          id: string
+          is_active: boolean
+          is_gcc: boolean
+          iso2: string
+          iso3: string | null
+          name: string
+          region: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dial_code?: string | null
+          id?: string
+          is_active?: boolean
+          is_gcc?: boolean
+          iso2: string
+          iso3?: string | null
+          name: string
+          region?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dial_code?: string | null
+          id?: string
+          is_active?: boolean
+          is_gcc?: boolean
+          iso2?: string
+          iso3?: string | null
+          name?: string
+          region?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      currencies: {
+        Row: {
+          created_at: string
+          decimals: number
+          id: string
+          is_active: boolean
+          iso_code: string
+          name: string
+          symbol: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decimals?: number
+          id?: string
+          is_active?: boolean
+          iso_code: string
+          name: string
+          symbol?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decimals?: number
+          id?: string
+          is_active?: boolean
+          iso_code?: string
+          name?: string
+          symbol?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dashboard_snapshots: {
+        Row: {
+          created_at: string
+          generated_by: string | null
+          id: string
+          metrics: Json
+          scope: string
+          scope_id: string | null
+          snapshot_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          generated_by?: string | null
+          id?: string
+          metrics: Json
+          scope: string
+          scope_id?: string | null
+          snapshot_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          generated_by?: string | null
+          id?: string
+          metrics?: Json
+          scope?: string
+          scope_id?: string | null
+          snapshot_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_snapshots_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disease_master: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          icd10_code: string | null
+          id: string
+          is_active: boolean
+          name: string
+          synonyms: string[] | null
+          typical_specialty_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icd10_code?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          synonyms?: string[] | null
+          typical_specialty_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icd10_code?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          synonyms?: string[] | null
+          typical_specialty_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disease_master_typical_specialty_id_fkey"
+            columns: ["typical_specialty_id"]
+            isOneToOne: false
+            referencedRelation: "medical_specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_hospitals: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          hospital_id: string
+          id: string
+          is_active: boolean
+          role: string | null
+          since_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          hospital_id: string
+          id?: string
+          is_active?: boolean
+          role?: string | null
+          since_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          hospital_id?: string
+          id?: string
+          is_active?: boolean
+          role?: string | null
+          since_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_hospitals_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_hospitals_hospital_id_fkey"
+            columns: ["hospital_id"]
+            isOneToOne: false
+            referencedRelation: "hospitals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_specialties: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          is_primary: boolean
+          specialty_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          is_primary?: boolean
+          specialty_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          is_primary?: boolean
+          specialty_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_specialties_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "medical_specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
+          availability_schedule: Json | null
+          consultation_fee: number | null
+          consultation_fee_currency:
+            | Database["public"]["Enums"]["currency_code"]
+            | null
           created_at: string
           deleted_at: string | null
           email: string | null
           full_name: string
           hospital_id: string | null
           id: string
+          international_case_experience: number | null
           is_active: boolean
           languages: string[] | null
           notes: string | null
@@ -395,12 +798,18 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          availability_schedule?: Json | null
+          consultation_fee?: number | null
+          consultation_fee_currency?:
+            | Database["public"]["Enums"]["currency_code"]
+            | null
           created_at?: string
           deleted_at?: string | null
           email?: string | null
           full_name: string
           hospital_id?: string | null
           id?: string
+          international_case_experience?: number | null
           is_active?: boolean
           languages?: string[] | null
           notes?: string | null
@@ -412,12 +821,18 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          availability_schedule?: Json | null
+          consultation_fee?: number | null
+          consultation_fee_currency?:
+            | Database["public"]["Enums"]["currency_code"]
+            | null
           created_at?: string
           deleted_at?: string | null
           email?: string | null
           full_name?: string
           hospital_id?: string | null
           id?: string
+          international_case_experience?: number | null
           is_active?: boolean
           languages?: string[] | null
           notes?: string | null
@@ -762,8 +1177,64 @@ export type Database = {
           },
         ]
       }
+      hospital_specialties: {
+        Row: {
+          created_at: string
+          department_name: string | null
+          hospital_id: string
+          id: string
+          is_active: boolean
+          lead_doctor_id: string | null
+          specialty_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_name?: string | null
+          hospital_id: string
+          id?: string
+          is_active?: boolean
+          lead_doctor_id?: string | null
+          specialty_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_name?: string | null
+          hospital_id?: string
+          id?: string
+          is_active?: boolean
+          lead_doctor_id?: string | null
+          specialty_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hospital_specialties_hospital_id_fkey"
+            columns: ["hospital_id"]
+            isOneToOne: false
+            referencedRelation: "hospitals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hospital_specialties_lead_doctor_id_fkey"
+            columns: ["lead_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hospital_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "medical_specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hospitals: {
         Row: {
+          accreditation: string | null
           accreditations: string[] | null
           address: string | null
           city: string | null
@@ -773,17 +1244,23 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           email: string | null
+          emergency_contact: string | null
+          google_maps_url: string | null
           id: string
+          international_desk: boolean
+          international_desk_contact: string | null
           is_active: boolean
           name: string
           notes: string | null
           phone: string | null
+          response_sla_hours: number | null
           specialties: string[] | null
           tier: Database["public"]["Enums"]["hospital_tier"] | null
           updated_at: string
           website: string | null
         }
         Insert: {
+          accreditation?: string | null
           accreditations?: string[] | null
           address?: string | null
           city?: string | null
@@ -793,17 +1270,23 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          google_maps_url?: string | null
           id?: string
+          international_desk?: boolean
+          international_desk_contact?: string | null
           is_active?: boolean
           name: string
           notes?: string | null
           phone?: string | null
+          response_sla_hours?: number | null
           specialties?: string[] | null
           tier?: Database["public"]["Enums"]["hospital_tier"] | null
           updated_at?: string
           website?: string | null
         }
         Update: {
+          accreditation?: string | null
           accreditations?: string[] | null
           address?: string | null
           city?: string | null
@@ -813,15 +1296,53 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          google_maps_url?: string | null
           id?: string
+          international_desk?: boolean
+          international_desk_contact?: string | null
           is_active?: boolean
           name?: string
           notes?: string | null
           phone?: string | null
+          response_sla_hours?: number | null
           specialties?: string[] | null
           tier?: Database["public"]["Enums"]["hospital_tier"] | null
           updated_at?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      languages: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          is_rtl: boolean
+          iso_code: string
+          name: string
+          native_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_rtl?: boolean
+          iso_code: string
+          name: string
+          native_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_rtl?: boolean
+          iso_code?: string
+          name?: string
+          native_name?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -991,6 +1512,113 @@ export type Database = {
           },
         ]
       }
+      medical_specialties: {
+        Row: {
+          code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_specialty_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_specialty_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_specialty_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_specialties_parent_specialty_id_fkey"
+            columns: ["parent_specialty_id"]
+            isOneToOne: false
+            referencedRelation: "medical_specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          case_id: string | null
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          data: Json | null
+          id: string
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          read_at: string | null
+          recipient_user_id: string
+          scheduled_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          case_id?: string | null
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          data?: Json | null
+          id?: string
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          read_at?: string | null
+          recipient_user_id: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          case_id?: string | null
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          data?: Json | null
+          id?: string
+          notification_type?: Database["public"]["Enums"]["notification_type"]
+          read_at?: string | null
+          recipient_user_id?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       persons: {
         Row: {
           address: string | null
@@ -1008,16 +1636,21 @@ export type Database = {
           gender: string | null
           id: string
           last_name: string | null
+          marketing_consent: boolean
           middle_name: string | null
           nationality: string | null
           notes: string | null
           passport_expiry: string | null
           passport_issue_country: string | null
           passport_number: string | null
+          preferred_doctor_id: string | null
+          preferred_hospital_id: string | null
           preferred_language: string | null
           primary_phone: string | null
           updated_at: string
+          visa_status: string | null
           whatsapp_number: string | null
+          whatsapp_verified: boolean
         }
         Insert: {
           address?: string | null
@@ -1035,16 +1668,21 @@ export type Database = {
           gender?: string | null
           id?: string
           last_name?: string | null
+          marketing_consent?: boolean
           middle_name?: string | null
           nationality?: string | null
           notes?: string | null
           passport_expiry?: string | null
           passport_issue_country?: string | null
           passport_number?: string | null
+          preferred_doctor_id?: string | null
+          preferred_hospital_id?: string | null
           preferred_language?: string | null
           primary_phone?: string | null
           updated_at?: string
+          visa_status?: string | null
           whatsapp_number?: string | null
+          whatsapp_verified?: boolean
         }
         Update: {
           address?: string | null
@@ -1062,16 +1700,21 @@ export type Database = {
           gender?: string | null
           id?: string
           last_name?: string | null
+          marketing_consent?: boolean
           middle_name?: string | null
           nationality?: string | null
           notes?: string | null
           passport_expiry?: string | null
           passport_issue_country?: string | null
           passport_number?: string | null
+          preferred_doctor_id?: string | null
+          preferred_hospital_id?: string | null
           preferred_language?: string | null
           primary_phone?: string | null
           updated_at?: string
+          visa_status?: string | null
           whatsapp_number?: string | null
+          whatsapp_verified?: boolean
         }
         Relationships: [
           {
@@ -1081,10 +1724,25 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "persons_preferred_doctor_id_fkey"
+            columns: ["preferred_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "persons_preferred_hospital_id_fkey"
+            columns: ["preferred_hospital_id"]
+            isOneToOne: false
+            referencedRelation: "hospitals"
+            referencedColumns: ["id"]
+          },
         ]
       }
       quotations: {
         Row: {
+          accommodation_cost: number | null
           case_id: string
           created_at: string
           created_by: string | null
@@ -1093,24 +1751,35 @@ export type Database = {
           discount: number
           document_path: string | null
           expected_net_revenue: number | null
+          flight_cost: number | null
           fx_rate_to_inr: number | null
+          gross_profit: number | null
+          hospital_cost: number | null
           hospital_id: string | null
           hospital_opinion_id: string | null
           id: string
           misc_cost: number
+          net_profit: number | null
           notes: string | null
           quotation_number: string | null
+          quotation_version: number
+          riayah_service_fee: number | null
           room_cost: number
           sent_at: string | null
           service_charge: number | null
           status: Database["public"]["Enums"]["quotation_status"]
           total_amount: number
           total_inr: number | null
+          total_package_cost: number | null
+          translator_cost: number | null
+          transport_cost: number | null
           treatment_cost: number
           updated_at: string
           valid_until: string | null
+          visa_cost: number | null
         }
         Insert: {
+          accommodation_cost?: number | null
           case_id: string
           created_at?: string
           created_by?: string | null
@@ -1119,24 +1788,35 @@ export type Database = {
           discount?: number
           document_path?: string | null
           expected_net_revenue?: number | null
+          flight_cost?: number | null
           fx_rate_to_inr?: number | null
+          gross_profit?: number | null
+          hospital_cost?: number | null
           hospital_id?: string | null
           hospital_opinion_id?: string | null
           id?: string
           misc_cost?: number
+          net_profit?: number | null
           notes?: string | null
           quotation_number?: string | null
+          quotation_version?: number
+          riayah_service_fee?: number | null
           room_cost?: number
           sent_at?: string | null
           service_charge?: number | null
           status?: Database["public"]["Enums"]["quotation_status"]
           total_amount?: number
           total_inr?: number | null
+          total_package_cost?: number | null
+          translator_cost?: number | null
+          transport_cost?: number | null
           treatment_cost?: number
           updated_at?: string
           valid_until?: string | null
+          visa_cost?: number | null
         }
         Update: {
+          accommodation_cost?: number | null
           case_id?: string
           created_at?: string
           created_by?: string | null
@@ -1145,22 +1825,32 @@ export type Database = {
           discount?: number
           document_path?: string | null
           expected_net_revenue?: number | null
+          flight_cost?: number | null
           fx_rate_to_inr?: number | null
+          gross_profit?: number | null
+          hospital_cost?: number | null
           hospital_id?: string | null
           hospital_opinion_id?: string | null
           id?: string
           misc_cost?: number
+          net_profit?: number | null
           notes?: string | null
           quotation_number?: string | null
+          quotation_version?: number
+          riayah_service_fee?: number | null
           room_cost?: number
           sent_at?: string | null
           service_charge?: number | null
           status?: Database["public"]["Enums"]["quotation_status"]
           total_amount?: number
           total_inr?: number | null
+          total_package_cost?: number | null
+          translator_cost?: number | null
+          transport_cost?: number | null
           treatment_cost?: number
           updated_at?: string
           valid_until?: string | null
+          visa_cost?: number | null
         }
         Relationships: [
           {
@@ -1189,6 +1879,150 @@ export type Database = {
             columns: ["hospital_opinion_id"]
             isOneToOne: false
             referencedRelation: "hospital_opinions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_partners: {
+        Row: {
+          agreement_end_date: string | null
+          agreement_start_date: string | null
+          city: string | null
+          commission_percentage: number | null
+          contact_person: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          partner_type: Database["public"]["Enums"]["referral_partner_type"]
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          agreement_end_date?: string | null
+          agreement_start_date?: string | null
+          city?: string | null
+          commission_percentage?: number | null
+          contact_person?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          partner_type: Database["public"]["Enums"]["referral_partner_type"]
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agreement_end_date?: string | null
+          agreement_start_date?: string | null
+          city?: string | null
+          commission_percentage?: number | null
+          contact_person?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          partner_type?: Database["public"]["Enums"]["referral_partner_type"]
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_partners_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_transactions: {
+        Row: {
+          amount_inr: number | null
+          case_id: string
+          commission_amount: number
+          created_at: string
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency_code"]
+          deleted_at: string | null
+          id: string
+          invoice_number: string | null
+          invoiced_at: string | null
+          notes: string | null
+          paid_at: string | null
+          partner_id: string
+          status: Database["public"]["Enums"]["referral_transaction_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_inr?: number | null
+          case_id: string
+          commission_amount: number
+          created_at?: string
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_code"]
+          deleted_at?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoiced_at?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          partner_id: string
+          status?: Database["public"]["Enums"]["referral_transaction_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_inr?: number | null
+          case_id?: string
+          commission_amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency_code"]
+          deleted_at?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoiced_at?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          partner_id?: string
+          status?: Database["public"]["Enums"]["referral_transaction_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_transactions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_transactions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
             referencedColumns: ["id"]
           },
         ]
@@ -1332,6 +2166,62 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_templates: {
+        Row: {
+          clinical_path: Database["public"]["Enums"]["clinical_path"] | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sla_hours: number | null
+          stage: Database["public"]["Enums"]["workflow_stage"] | null
+          tasks: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          clinical_path?: Database["public"]["Enums"]["clinical_path"] | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sla_hours?: number | null
+          stage?: Database["public"]["Enums"]["workflow_stage"] | null
+          tasks?: Json
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          clinical_path?: Database["public"]["Enums"]["clinical_path"] | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sla_hours?: number | null
+          stage?: Database["public"]["Enums"]["workflow_stage"] | null
+          tasks?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1357,6 +2247,7 @@ export type Database = {
         | "medical_summary"
         | "translation"
         | "other"
+      ai_log_status: "success" | "error" | "timeout" | "rate_limited"
       app_role:
         | "admin"
         | "coordinator"
@@ -1468,6 +2359,19 @@ export type Database = {
         | "insurance"
         | "local_stay"
         | "other"
+      notification_channel: "in_app" | "email" | "sms" | "whatsapp" | "push"
+      notification_status: "pending" | "sent" | "delivered" | "read" | "failed"
+      notification_type:
+        | "case_update"
+        | "sla_breach"
+        | "new_lead"
+        | "task_assigned"
+        | "follow_up_due"
+        | "quotation_response"
+        | "payment_received"
+        | "document_uploaded"
+        | "ai_insight"
+        | "system"
       opinion_status:
         | "requested"
         | "in_review"
@@ -1482,6 +2386,20 @@ export type Database = {
         | "declined"
         | "expired"
         | "revised"
+      referral_partner_type:
+        | "individual"
+        | "clinic"
+        | "agency"
+        | "corporate"
+        | "embassy"
+        | "insurance"
+        | "other"
+      referral_transaction_status:
+        | "pending"
+        | "approved"
+        | "invoiced"
+        | "paid"
+        | "cancelled"
       report_translation_status:
         | "not_required"
         | "pending"
@@ -1650,6 +2568,7 @@ export const Constants = {
         "translation",
         "other",
       ],
+      ai_log_status: ["success", "error", "timeout", "rate_limited"],
       app_role: [
         "admin",
         "coordinator",
@@ -1773,6 +2692,20 @@ export const Constants = {
         "local_stay",
         "other",
       ],
+      notification_channel: ["in_app", "email", "sms", "whatsapp", "push"],
+      notification_status: ["pending", "sent", "delivered", "read", "failed"],
+      notification_type: [
+        "case_update",
+        "sla_breach",
+        "new_lead",
+        "task_assigned",
+        "follow_up_due",
+        "quotation_response",
+        "payment_received",
+        "document_uploaded",
+        "ai_insight",
+        "system",
+      ],
       opinion_status: [
         "requested",
         "in_review",
@@ -1788,6 +2721,22 @@ export const Constants = {
         "declined",
         "expired",
         "revised",
+      ],
+      referral_partner_type: [
+        "individual",
+        "clinic",
+        "agency",
+        "corporate",
+        "embassy",
+        "insurance",
+        "other",
+      ],
+      referral_transaction_status: [
+        "pending",
+        "approved",
+        "invoiced",
+        "paid",
+        "cancelled",
       ],
       report_translation_status: [
         "not_required",
