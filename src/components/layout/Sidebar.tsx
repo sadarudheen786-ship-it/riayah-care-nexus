@@ -18,6 +18,7 @@ import {
   MessagesSquare,
   ShieldCheck,
   Plug,
+  Workflow,
   Settings,
   X,
   type LucideIcon,
@@ -53,6 +54,7 @@ const NAV: NavItem[] = [
   { label: "Communication", to: "/communication", icon: MessagesSquare, group: "Operations" },
 
   { label: "Administration", to: "/administration", icon: ShieldCheck, group: "System" },
+  { label: "Automation Engine", to: "/automation", icon: Workflow, group: "System" },
   { label: "Integration Hub", to: "/integrations", icon: Plug, group: "System" },
   { label: "Settings", to: "/settings", icon: Settings, group: "System" },
 ];

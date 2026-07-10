@@ -20,6 +20,7 @@ import {
   Receipt,
   MessageSquareQuote,
   Radar,
+  Workflow,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -33,6 +34,7 @@ const SECTIONS = [
     heading: "Workspaces",
     items: [
       { icon: Radar, label: "Executive Command Center", to: "/command-center" },
+      { icon: Workflow, label: "Automation Engine", to: "/automation" },
     ],
   },
   {

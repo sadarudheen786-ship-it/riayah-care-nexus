@@ -26,6 +26,7 @@ import { Route as DiseaseEngineRouteImport } from './routes/disease-engine'
 import { Route as CommunicationRouteImport } from './routes/communication'
 import { Route as CommandCenterRouteImport } from './routes/command-center'
 import { Route as CaseWorkspaceRouteImport } from './routes/case-workspace'
+import { Route as AutomationRouteImport } from './routes/automation'
 import { Route as AdministrationRouteImport } from './routes/administration'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -114,6 +115,11 @@ const CaseWorkspaceRoute = CaseWorkspaceRouteImport.update({
   path: '/case-workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AutomationRoute = AutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdministrationRoute = AdministrationRouteImport.update({
   id: '/administration',
   path: '/administration',
@@ -128,6 +134,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/administration': typeof AdministrationRoute
+  '/automation': typeof AutomationRoute
   '/case-workspace': typeof CaseWorkspaceRoute
   '/command-center': typeof CommandCenterRoute
   '/communication': typeof CommunicationRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/administration': typeof AdministrationRoute
+  '/automation': typeof AutomationRoute
   '/case-workspace': typeof CaseWorkspaceRoute
   '/command-center': typeof CommandCenterRoute
   '/communication': typeof CommunicationRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/administration': typeof AdministrationRoute
+  '/automation': typeof AutomationRoute
   '/case-workspace': typeof CaseWorkspaceRoute
   '/command-center': typeof CommandCenterRoute
   '/communication': typeof CommunicationRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/administration'
+    | '/automation'
     | '/case-workspace'
     | '/command-center'
     | '/communication'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/administration'
+    | '/automation'
     | '/case-workspace'
     | '/command-center'
     | '/communication'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/administration'
+    | '/automation'
     | '/case-workspace'
     | '/command-center'
     | '/communication'
@@ -258,6 +270,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdministrationRoute: typeof AdministrationRoute
+  AutomationRoute: typeof AutomationRoute
   CaseWorkspaceRoute: typeof CaseWorkspaceRoute
   CommandCenterRoute: typeof CommandCenterRoute
   CommunicationRoute: typeof CommunicationRoute
@@ -398,6 +411,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseWorkspaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/automation': {
+      id: '/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AutomationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/administration': {
       id: '/administration'
       path: '/administration'
@@ -418,6 +438,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdministrationRoute: AdministrationRoute,
+  AutomationRoute: AutomationRoute,
   CaseWorkspaceRoute: CaseWorkspaceRoute,
   CommandCenterRoute: CommandCenterRoute,
   CommunicationRoute: CommunicationRoute,
