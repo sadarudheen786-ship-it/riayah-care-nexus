@@ -17,6 +17,7 @@ import {
   Files,
   MessagesSquare,
   ShieldCheck,
+  Plug,
   Settings,
   X,
   type LucideIcon,

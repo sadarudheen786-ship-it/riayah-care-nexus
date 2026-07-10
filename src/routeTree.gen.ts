@@ -15,6 +15,7 @@ import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as MedicalIntelligenceRouteImport } from './routes/medical-intelligence'
 import { Route as LeadsRouteImport } from './routes/leads'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as HospitalsRouteImport } from './routes/hospitals'
 import { Route as HospitalOpinionsRouteImport } from './routes/hospital-opinions'
 import { Route as FollowUpsRouteImport } from './routes/follow-ups'
@@ -56,6 +57,11 @@ const MedicalIntelligenceRoute = MedicalIntelligenceRouteImport.update({
 const LeadsRoute = LeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HospitalsRoute = HospitalsRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/follow-ups': typeof FollowUpsRoute
   '/hospital-opinions': typeof HospitalOpinionsRoute
   '/hospitals': typeof HospitalsRoute
+  '/integrations': typeof IntegrationsRoute
   '/leads': typeof LeadsRoute
   '/medical-intelligence': typeof MedicalIntelligenceRoute
   '/patients': typeof PatientsRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/follow-ups': typeof FollowUpsRoute
   '/hospital-opinions': typeof HospitalOpinionsRoute
   '/hospitals': typeof HospitalsRoute
+  '/integrations': typeof IntegrationsRoute
   '/leads': typeof LeadsRoute
   '/medical-intelligence': typeof MedicalIntelligenceRoute
   '/patients': typeof PatientsRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/follow-ups': typeof FollowUpsRoute
   '/hospital-opinions': typeof HospitalOpinionsRoute
   '/hospitals': typeof HospitalsRoute
+  '/integrations': typeof IntegrationsRoute
   '/leads': typeof LeadsRoute
   '/medical-intelligence': typeof MedicalIntelligenceRoute
   '/patients': typeof PatientsRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/follow-ups'
     | '/hospital-opinions'
     | '/hospitals'
+    | '/integrations'
     | '/leads'
     | '/medical-intelligence'
     | '/patients'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/follow-ups'
     | '/hospital-opinions'
     | '/hospitals'
+    | '/integrations'
     | '/leads'
     | '/medical-intelligence'
     | '/patients'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/follow-ups'
     | '/hospital-opinions'
     | '/hospitals'
+    | '/integrations'
     | '/leads'
     | '/medical-intelligence'
     | '/patients'
@@ -256,6 +268,7 @@ export interface RootRouteChildren {
   FollowUpsRoute: typeof FollowUpsRoute
   HospitalOpinionsRoute: typeof HospitalOpinionsRoute
   HospitalsRoute: typeof HospitalsRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   LeadsRoute: typeof LeadsRoute
   MedicalIntelligenceRoute: typeof MedicalIntelligenceRoute
   PatientsRoute: typeof PatientsRoute
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof LeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hospitals': {
@@ -408,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   FollowUpsRoute: FollowUpsRoute,
   HospitalOpinionsRoute: HospitalOpinionsRoute,
   HospitalsRoute: HospitalsRoute,
+  IntegrationsRoute: IntegrationsRoute,
   LeadsRoute: LeadsRoute,
   MedicalIntelligenceRoute: MedicalIntelligenceRoute,
   PatientsRoute: PatientsRoute,
@@ -418,13 +439,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
