@@ -1,9 +1,20 @@
+/**
+ * Meta WhatsApp Cloud API webhook.
+ * Incoming patient messages (text, media and voice notes) are routed through the
+ * central lead intake pipeline — the same one used by the website, Messenger,
+ * Instagram and lead ads. Delivery/read statuses update the conversation history.
+ */
+
 import { createFileRoute } from "@tanstack/react-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/integrations/supabase/types";
+import { ingestIntakeEvent } from "@/lib/intake/pipeline.server";
+import { verifyMetaSignature } from "@/lib/intake/security.server";
+import type { IntakeMedia } from "@/lib/intake/types";
 
 const PROVIDER = "meta_whatsapp";
 const MAX_BODY_BYTES = 1_000_000;
+const MAX_MEDIA_BYTES = 20_000_000;
 
 type WhatsAppMessage = {
   id?: string;
@@ -11,10 +22,10 @@ type WhatsAppMessage = {
   timestamp?: string;
   type?: string;
   text?: { body?: string };
-  image?: { caption?: string };
-  video?: { caption?: string };
-  document?: { caption?: string; filename?: string };
-  audio?: unknown;
+  image?: { caption?: string; id?: string; mime_type?: string };
+  video?: { caption?: string; id?: string; mime_type?: string };
+  document?: { caption?: string; filename?: string; id?: string; mime_type?: string };
+  audio?: { id?: string; mime_type?: string; voice?: boolean };
   sticker?: unknown;
   location?: unknown;
   contacts?: unknown;
@@ -31,43 +42,24 @@ type WhatsAppStatus = {
 
 type WhatsAppChangeValue = {
   metadata?: { phone_number_id?: string; display_phone_number?: string };
+  contacts?: Array<{ wa_id?: string; profile?: { name?: string } }>;
   messages?: WhatsAppMessage[];
   statuses?: WhatsAppStatus[];
 };
 
 type WhatsAppWebhookPayload = {
   object?: string;
-  entry?: Array<{
-    changes?: Array<{ value?: WhatsAppChangeValue }>;
-  }>;
+  entry?: Array<{ changes?: Array<{ value?: WhatsAppChangeValue }> }>;
 };
 
 type AdminClient = SupabaseClient<Database>;
 
 function json(data: unknown, status = 200) {
-  return Response.json(data, {
-    status,
-    headers: { "cache-control": "no-store" },
-  });
+  return Response.json(data, { status, headers: { "cache-control": "no-store" } });
 }
 
-function normalizePhone(value: string | null | undefined) {
-  return (value ?? "").replace(/\D/g, "");
-}
-
-function messageBody(message: WhatsAppMessage) {
-  if (message.type === "text") return message.text?.body ?? null;
-  if (message.type === "image") return message.image?.caption ?? "[Image]";
-  if (message.type === "video") return message.video?.caption ?? "[Video]";
-  if (message.type === "document") {
-    return message.document?.caption ?? message.document?.filename ?? "[Document]";
-  }
-  if (message.type === "audio") return "[Audio]";
-  if (message.type === "sticker") return "[Sticker]";
-  if (message.type === "location") return "[Location]";
-  if (message.type === "contacts") return "[Contact]";
-  if (message.type === "interactive") return "[Interactive message]";
-  return message.type ? `[${message.type}]` : null;
+function toJson(value: object): Json {
+  return JSON.parse(JSON.stringify(value)) as Json;
 }
 
 function timestampToIso(timestamp: string | undefined) {
@@ -77,128 +69,81 @@ function timestampToIso(timestamp: string | undefined) {
   return new Date(seconds * 1000).toISOString();
 }
 
-function toJson(value: object): Json {
-  return JSON.parse(JSON.stringify(value)) as Json;
+function messageText(message: WhatsAppMessage): string | null {
+  if (message.type === "text") return message.text?.body ?? null;
+  if (message.type === "image") return message.image?.caption ?? null;
+  if (message.type === "video") return message.video?.caption ?? null;
+  if (message.type === "document") return message.document?.caption ?? message.document?.filename ?? null;
+  return null;
 }
 
-async function findPersonAndCase(
-  supabaseAdmin: AdminClient,
-  phone: string,
-) {
-  const normalized = normalizePhone(phone);
-  if (!normalized) return { personId: null, caseId: null };
-
-  const { data: persons, error: personError } = await supabaseAdmin
-    .from("persons")
-    .select("id, primary_phone, whatsapp_number")
-    .or(`whatsapp_number.ilike.%${normalized},primary_phone.ilike.%${normalized}`)
-    .is("deleted_at", null)
-    .limit(10);
-
-  if (personError) throw personError;
-
-  const person = (persons ?? []).find(
-    (candidate) =>
-      normalizePhone(candidate.whatsapp_number) === normalized ||
-      normalizePhone(candidate.primary_phone) === normalized,
-  );
-
-  if (!person) return { personId: null, caseId: null };
-
-  const { data: latestCase, error: caseError } = await supabaseAdmin
-    .from("cases")
-    .select("id")
-    .eq("person_id", person.id)
-    .is("deleted_at", null)
-    .order("enquiry_date", { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (caseError) throw caseError;
-  return { personId: person.id, caseId: latestCase?.id ?? null };
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  return btoa(binary);
 }
 
-async function handleMessage(
-  supabaseAdmin: AdminClient,
-  message: WhatsAppMessage,
-  displayPhoneNumber: string | null,
-) {
-  if (!message.id || !message.from) return;
+/** Downloads WhatsApp media using the server-side access token. */
+async function downloadMedia(
+  mediaId: string,
+  kind: IntakeMedia["kind"],
+  fallbackMime: string,
+): Promise<IntakeMedia | null> {
+  const token = process.env["WHATSAPP_ACCESS_TOKEN"];
+  if (!token) return null;
 
-  const { data: existing, error: existingError } = await supabaseAdmin
-    .from("communications")
-    .select("id")
-    .eq("provider", PROVIDER)
-    .eq("external_message_id", message.id)
-    .maybeSingle();
-
-  if (existingError) throw existingError;
-  if (existing) return;
-
-  const { personId, caseId } = await findPersonAndCase(supabaseAdmin, message.from);
-
-  const { error } = await supabaseAdmin.from("communications").insert({
-    case_id: caseId,
-    person_id: personId,
-    channel: "whatsapp",
-    direction: "incoming",
-    body: messageBody(message),
-    subject: "WhatsApp message",
-    from_identifier: message.from,
-    to_identifier: displayPhoneNumber,
-    external_message_id: message.id,
-    occurred_at: timestampToIso(message.timestamp),
-    provider: PROVIDER,
-    provider_message_type: message.type ?? "unknown",
-    provider_payload: toJson(message),
+  const metaResponse = await fetch(`https://graph.facebook.com/v21.0/${mediaId}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
+  if (!metaResponse.ok) return null;
+  const meta = (await metaResponse.json()) as { url?: string; mime_type?: string; file_size?: number };
+  if (!meta.url) return null;
+  if (meta.file_size && meta.file_size > MAX_MEDIA_BYTES) return null;
 
-  if (error) throw error;
-}
+  const fileResponse = await fetch(meta.url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!fileResponse.ok) return null;
+  const bytes = new Uint8Array(await fileResponse.arrayBuffer());
+  if (bytes.byteLength > MAX_MEDIA_BYTES) return null;
 
-async function handleStatus(
-  supabaseAdmin: AdminClient,
-  status: WhatsAppStatus,
-) {
-  if (!status.id || !status.status) return;
-
-  const statusPayload = {
-    provider: PROVIDER,
-    provider_message_type: "status",
-    message_status: status.status,
-    status_updated_at: timestampToIso(status.timestamp),
-    provider_payload: toJson(status),
+  return {
+    base64: bytesToBase64(bytes),
+    mimeType: meta.mime_type ?? fallbackMime,
+    kind,
   };
+}
 
-  const { data: updated, error: updateError } = await supabaseAdmin
+async function resolveMedia(message: WhatsAppMessage): Promise<IntakeMedia | null> {
+  if (message.type === "audio" && message.audio?.id) {
+    return downloadMedia(message.audio.id, "audio", message.audio.mime_type ?? "audio/ogg");
+  }
+  if (message.type === "image" && message.image?.id) {
+    return downloadMedia(message.image.id, "image", message.image.mime_type ?? "image/jpeg");
+  }
+  if (message.type === "document" && message.document?.id) {
+    const media = await downloadMedia(
+      message.document.id,
+      "document",
+      message.document.mime_type ?? "application/pdf",
+    );
+    return media ? { ...media, fileName: message.document.filename } : null;
+  }
+  return null;
+}
+
+async function handleStatus(admin: AdminClient, status: WhatsAppStatus) {
+  if (!status.id || !status.status) return;
+  const { error } = await admin
     .from("communications")
-    .update(statusPayload)
+    .update({
+      provider: PROVIDER,
+      message_status: status.status,
+      status_updated_at: timestampToIso(status.timestamp),
+      provider_payload: toJson(status),
+    })
     .eq("provider", PROVIDER)
-    .eq("external_message_id", status.id)
-    .select("id")
-    .limit(1);
-
-  if (updateError) throw updateError;
-  if (updated && updated.length > 0) return;
-
-  const { personId, caseId } = await findPersonAndCase(
-    supabaseAdmin,
-    status.recipient_id ?? "",
-  );
-
-  const { error: insertError } = await supabaseAdmin.from("communications").insert({
-    case_id: caseId,
-    person_id: personId,
-    channel: "whatsapp",
-    direction: "outgoing",
-    subject: "WhatsApp message status",
-    to_identifier: status.recipient_id ?? null,
-    external_message_id: status.id,
-    occurred_at: timestampToIso(status.timestamp),
-    ...statusPayload,
-  });
-
-  if (insertError) throw insertError;
+    .eq("external_message_id", status.id);
+  if (error) throw error;
 }
 
 export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
@@ -214,25 +159,24 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         if (!verifyToken || mode !== "subscribe" || token !== verifyToken || !challenge) {
           return new Response("Forbidden", { status: 403 });
         }
-
         return new Response(challenge, {
           status: 200,
           headers: { "content-type": "text/plain; charset=utf-8" },
         });
       },
+
       POST: async ({ request }) => {
         const phoneNumberId = process.env["WHATSAPP_PHONE_NUMBER_ID"];
         if (!phoneNumberId) return json({ error: "Webhook is not configured" }, 503);
-
-        const contentLength = Number(request.headers.get("content-length") ?? "0");
-        if (contentLength > MAX_BODY_BYTES) {
-          return json({ error: "Payload too large" }, 413);
-        }
 
         const rawBody = await request.text();
         if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
           return json({ error: "Payload too large" }, 413);
         }
+
+        // When META_APP_SECRET is configured the signature must be valid.
+        const signature = await verifyMetaSignature(request, rawBody);
+        if (signature === "invalid") return json({ error: "Invalid signature" }, 401);
 
         let payload: WhatsAppWebhookPayload;
         try {
@@ -246,6 +190,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const admin = supabaseAdmin as AdminClient;
         let processedMessages = 0;
         let processedStatuses = 0;
 
@@ -255,12 +200,29 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
             if (value?.metadata?.phone_number_id !== phoneNumberId) continue;
 
             for (const message of value.messages ?? []) {
-              await handleMessage(supabaseAdmin, message, value.metadata?.display_phone_number ?? null);
+              if (!message.id || !message.from) continue;
+              const profileName = value.contacts?.find((c) => c.wa_id === message.from)?.profile?.name;
+              const media = await resolveMedia(message);
+
+              await ingestIntakeEvent({
+                channel: "whatsapp",
+                provider: PROVIDER,
+                externalEventId: message.id,
+                receivedAt: timestampToIso(message.timestamp),
+                contact: {
+                  name: profileName ?? null,
+                  phone: message.from,
+                  whatsapp: message.from,
+                },
+                message: messageText(message),
+                media,
+                rawPayload: message,
+              });
               processedMessages += 1;
             }
 
             for (const status of value.statuses ?? []) {
-              await handleStatus(supabaseAdmin, status);
+              await handleStatus(admin, status);
               processedStatuses += 1;
             }
           }
