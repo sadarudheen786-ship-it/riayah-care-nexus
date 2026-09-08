@@ -30,6 +30,8 @@ import { Route as AutomationRouteImport } from './routes/automation'
 import { Route as AdministrationRouteImport } from './routes/administration'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
+import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api/public/webhooks/meta'
+import { Route as ApiPublicIntakeLeadRouteImport } from './routes/api/public/intake/lead'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -137,6 +139,16 @@ const ApiPublicWebhooksWhatsappRoute =
     path: '/api/public/webhooks/whatsapp',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
+  id: '/api/public/webhooks/meta',
+  path: '/api/public/webhooks/meta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicIntakeLeadRoute = ApiPublicIntakeLeadRouteImport.update({
+  id: '/api/public/intake/lead',
+  path: '/api/public/intake/lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +171,8 @@ export interface FileRoutesByFullPath {
   '/proposals': typeof ProposalsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/api/public/intake/lead': typeof ApiPublicIntakeLeadRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
 }
 export interface FileRoutesByTo {
@@ -182,6 +196,8 @@ export interface FileRoutesByTo {
   '/proposals': typeof ProposalsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/api/public/intake/lead': typeof ApiPublicIntakeLeadRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
 }
 export interface FileRoutesById {
@@ -206,6 +222,8 @@ export interface FileRoutesById {
   '/proposals': typeof ProposalsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/api/public/intake/lead': typeof ApiPublicIntakeLeadRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
 }
 export interface FileRouteTypes {
@@ -231,6 +249,8 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/reports'
     | '/settings'
+    | '/api/public/intake/lead'
+    | '/api/public/webhooks/meta'
     | '/api/public/webhooks/whatsapp'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -254,6 +274,8 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/reports'
     | '/settings'
+    | '/api/public/intake/lead'
+    | '/api/public/webhooks/meta'
     | '/api/public/webhooks/whatsapp'
   id:
     | '__root__'
@@ -277,6 +299,8 @@ export interface FileRouteTypes {
     | '/proposals'
     | '/reports'
     | '/settings'
+    | '/api/public/intake/lead'
+    | '/api/public/webhooks/meta'
     | '/api/public/webhooks/whatsapp'
   fileRoutesById: FileRoutesById
 }
@@ -301,6 +325,8 @@ export interface RootRouteChildren {
   ProposalsRoute: typeof ProposalsRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
+  ApiPublicIntakeLeadRoute: typeof ApiPublicIntakeLeadRoute
+  ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
   ApiPublicWebhooksWhatsappRoute: typeof ApiPublicWebhooksWhatsappRoute
 }
 
@@ -453,6 +479,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/meta': {
+      id: '/api/public/webhooks/meta'
+      path: '/api/public/webhooks/meta'
+      fullPath: '/api/public/webhooks/meta'
+      preLoaderRoute: typeof ApiPublicWebhooksMetaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/intake/lead': {
+      id: '/api/public/intake/lead'
+      path: '/api/public/intake/lead'
+      fullPath: '/api/public/intake/lead'
+      preLoaderRoute: typeof ApiPublicIntakeLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -477,6 +517,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProposalsRoute: ProposalsRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
+  ApiPublicIntakeLeadRoute: ApiPublicIntakeLeadRoute,
+  ApiPublicWebhooksMetaRoute: ApiPublicWebhooksMetaRoute,
   ApiPublicWebhooksWhatsappRoute: ApiPublicWebhooksWhatsappRoute,
 }
 export const routeTree = rootRouteImport

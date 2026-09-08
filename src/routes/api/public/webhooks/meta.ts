@@ -132,7 +132,9 @@ export const Route = createFileRoute("/api/public/webhooks/meta")({
           for (const change of entry.changes ?? []) {
             if (change.field !== "leadgen" || !change.value?.leadgen_id) continue;
             const value = change.value;
-            const lead = await fetchLeadgen(value.leadgen_id);
+            const leadgenId = value.leadgen_id;
+            if (!leadgenId) continue;
+            const lead = await fetchLeadgen(leadgenId);
             const fields = new Map(
               (lead?.field_data ?? []).map((f) => [f.name ?? "", f.values?.[0] ?? ""]),
             );
@@ -142,7 +144,7 @@ export const Route = createFileRoute("/api/public/webhooks/meta")({
             await ingestIntakeEvent({
               channel,
               provider: "meta_leadgen",
-              externalEventId: value.leadgen_id,
+              externalEventId: leadgenId,
               receivedAt: lead?.created_time ?? null,
               contact: {
                 name: fields.get("full_name") ?? fields.get("first_name") ?? null,
