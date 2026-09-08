@@ -455,8 +455,13 @@ export type Database = {
           external_message_id: string | null
           from_identifier: string | null
           id: string
+          message_status: string | null
           occurred_at: string
           person_id: string | null
+          provider: string | null
+          provider_message_type: string | null
+          provider_payload: Json | null
+          status_updated_at: string | null
           subject: string | null
           to_identifier: string | null
           updated_at: string
@@ -474,8 +479,13 @@ export type Database = {
           external_message_id?: string | null
           from_identifier?: string | null
           id?: string
+          message_status?: string | null
           occurred_at?: string
           person_id?: string | null
+          provider?: string | null
+          provider_message_type?: string | null
+          provider_payload?: Json | null
+          status_updated_at?: string | null
           subject?: string | null
           to_identifier?: string | null
           updated_at?: string
@@ -493,8 +503,13 @@ export type Database = {
           external_message_id?: string | null
           from_identifier?: string | null
           id?: string
+          message_status?: string | null
           occurred_at?: string
           person_id?: string | null
+          provider?: string | null
+          provider_message_type?: string | null
+          provider_payload?: Json | null
+          status_updated_at?: string | null
           subject?: string | null
           to_identifier?: string | null
           updated_at?: string
