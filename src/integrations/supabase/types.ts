@@ -146,6 +146,83 @@ export type Database = {
           },
         ]
       }
+      ai_intake_audit: {
+        Row: {
+          action: string
+          case_id: string | null
+          changed_by: string | null
+          created_at: string
+          evidence: Json | null
+          human_change: Json | null
+          id: string
+          input_reference: Json | null
+          input_source: Database["public"]["Enums"]["evidence_source"] | null
+          intake_event_id: string | null
+          model: string | null
+          output: Json | null
+          person_id: string | null
+        }
+        Insert: {
+          action: string
+          case_id?: string | null
+          changed_by?: string | null
+          created_at?: string
+          evidence?: Json | null
+          human_change?: Json | null
+          id?: string
+          input_reference?: Json | null
+          input_source?: Database["public"]["Enums"]["evidence_source"] | null
+          intake_event_id?: string | null
+          model?: string | null
+          output?: Json | null
+          person_id?: string | null
+        }
+        Update: {
+          action?: string
+          case_id?: string | null
+          changed_by?: string | null
+          created_at?: string
+          evidence?: Json | null
+          human_change?: Json | null
+          id?: string
+          input_reference?: Json | null
+          input_source?: Database["public"]["Enums"]["evidence_source"] | null
+          intake_event_id?: string | null
+          model?: string | null
+          output?: Json | null
+          person_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_intake_audit_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_intake_audit_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_intake_audit_intake_event_id_fkey"
+            columns: ["intake_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intake_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_intake_audit_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_logs: {
         Row: {
           case_id: string | null
@@ -275,6 +352,118 @@ export type Database = {
           },
         ]
       }
+      ai_triage_assessments: {
+        Row: {
+          case_id: string | null
+          change_reason: string | null
+          confidence: number | null
+          created_at: string
+          decided_by_type: Database["public"]["Enums"]["triage_decider"]
+          evidence: Json | null
+          id: string
+          information_used: Json | null
+          intake_event_id: string | null
+          is_current: boolean
+          model: string | null
+          overridden_by: string | null
+          person_id: string | null
+          previous_priority: Database["public"]["Enums"]["urgency_level"] | null
+          reason: string | null
+          recommended_priority:
+            | Database["public"]["Enums"]["urgency_level"]
+            | null
+          requires_human_review: boolean
+          superseded_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          case_id?: string | null
+          change_reason?: string | null
+          confidence?: number | null
+          created_at?: string
+          decided_by_type?: Database["public"]["Enums"]["triage_decider"]
+          evidence?: Json | null
+          id?: string
+          information_used?: Json | null
+          intake_event_id?: string | null
+          is_current?: boolean
+          model?: string | null
+          overridden_by?: string | null
+          person_id?: string | null
+          previous_priority?:
+            | Database["public"]["Enums"]["urgency_level"]
+            | null
+          reason?: string | null
+          recommended_priority?:
+            | Database["public"]["Enums"]["urgency_level"]
+            | null
+          requires_human_review?: boolean
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string | null
+          change_reason?: string | null
+          confidence?: number | null
+          created_at?: string
+          decided_by_type?: Database["public"]["Enums"]["triage_decider"]
+          evidence?: Json | null
+          id?: string
+          information_used?: Json | null
+          intake_event_id?: string | null
+          is_current?: boolean
+          model?: string | null
+          overridden_by?: string | null
+          person_id?: string | null
+          previous_priority?:
+            | Database["public"]["Enums"]["urgency_level"]
+            | null
+          reason?: string | null
+          recommended_priority?:
+            | Database["public"]["Enums"]["urgency_level"]
+            | null
+          requires_human_review?: boolean
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_triage_assessments_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_triage_assessments_intake_event_id_fkey"
+            columns: ["intake_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intake_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_triage_assessments_overridden_by_fkey"
+            columns: ["overridden_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_triage_assessments_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_triage_assessments_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "ai_triage_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           actual_arrival_date: string | null
@@ -301,6 +490,7 @@ export type Database = {
             | null
           expected_surgery_date: string | null
           id: string
+          is_demo: boolean
           lead_source: Database["public"]["Enums"]["lead_source"] | null
           medical_reviewer_id: string | null
           notes: string | null
@@ -341,6 +531,7 @@ export type Database = {
             | null
           expected_surgery_date?: string | null
           id?: string
+          is_demo?: boolean
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           medical_reviewer_id?: string | null
           notes?: string | null
@@ -381,6 +572,7 @@ export type Database = {
             | null
           expected_surgery_date?: string | null
           id?: string
+          is_demo?: boolean
           lead_source?: Database["public"]["Enums"]["lead_source"] | null
           medical_reviewer_id?: string | null
           notes?: string | null
@@ -534,6 +726,90 @@ export type Database = {
             columns: ["person_id"]
             isOneToOne: false
             referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coordinator_assignment_rules: {
+        Row: {
+          assign_to_role: Database["public"]["Enums"]["app_role"] | null
+          assign_to_user_id: string | null
+          balance_by_workload: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          match_case_types: string[] | null
+          match_countries: string[] | null
+          match_languages: string[] | null
+          match_priorities:
+            | Database["public"]["Enums"]["urgency_level"][]
+            | null
+          match_sources: Database["public"]["Enums"]["intake_channel"][] | null
+          match_specialties: string[] | null
+          max_open_cases: number | null
+          name: string
+          priority_order: number
+          updated_at: string
+        }
+        Insert: {
+          assign_to_role?: Database["public"]["Enums"]["app_role"] | null
+          assign_to_user_id?: string | null
+          balance_by_workload?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          match_case_types?: string[] | null
+          match_countries?: string[] | null
+          match_languages?: string[] | null
+          match_priorities?:
+            | Database["public"]["Enums"]["urgency_level"][]
+            | null
+          match_sources?: Database["public"]["Enums"]["intake_channel"][] | null
+          match_specialties?: string[] | null
+          max_open_cases?: number | null
+          name: string
+          priority_order?: number
+          updated_at?: string
+        }
+        Update: {
+          assign_to_role?: Database["public"]["Enums"]["app_role"] | null
+          assign_to_user_id?: string | null
+          balance_by_workload?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          match_case_types?: string[] | null
+          match_countries?: string[] | null
+          match_languages?: string[] | null
+          match_priorities?:
+            | Database["public"]["Enums"]["urgency_level"][]
+            | null
+          match_sources?: Database["public"]["Enums"]["intake_channel"][] | null
+          match_specialties?: string[] | null
+          max_open_cases?: number | null
+          name?: string
+          priority_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coordinator_assignment_rules_assign_to_user_id_fkey"
+            columns: ["assign_to_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coordinator_assignment_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -868,6 +1144,102 @@ export type Database = {
           },
         ]
       }
+      document_extractions: {
+        Row: {
+          case_id: string | null
+          confidence: number | null
+          created_at: string
+          detected_document_type: string | null
+          document_id: string | null
+          error_message: string | null
+          extraction: Json | null
+          id: string
+          medical_report_id: string | null
+          model: string | null
+          person_id: string | null
+          processor_key: string
+          raw_text: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["extraction_status"]
+          updated_at: string
+        }
+        Insert: {
+          case_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          detected_document_type?: string | null
+          document_id?: string | null
+          error_message?: string | null
+          extraction?: Json | null
+          id?: string
+          medical_report_id?: string | null
+          model?: string | null
+          person_id?: string | null
+          processor_key: string
+          raw_text?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["extraction_status"]
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          detected_document_type?: string | null
+          document_id?: string | null
+          error_message?: string | null
+          extraction?: Json | null
+          id?: string
+          medical_report_id?: string | null
+          model?: string | null
+          person_id?: string | null
+          processor_key?: string
+          raw_text?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["extraction_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_extractions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_extractions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_extractions_medical_report_id_fkey"
+            columns: ["medical_report_id"]
+            isOneToOne: false
+            referencedRelation: "medical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_extractions_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_extractions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           case_id: string | null
@@ -934,6 +1306,134 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extracted_facts: {
+        Row: {
+          case_id: string | null
+          communication_id: string | null
+          confidence: number | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          conflict_group: string | null
+          created_at: string
+          document_id: string | null
+          field_group: string
+          field_key: string
+          field_label: string | null
+          id: string
+          intake_event_id: string | null
+          medical_report_id: string | null
+          observed_at: string | null
+          person_id: string | null
+          review_note: string | null
+          source: Database["public"]["Enums"]["evidence_source"]
+          source_quote: string | null
+          status: Database["public"]["Enums"]["fact_status"]
+          updated_at: string
+          value_json: Json | null
+          value_text: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          communication_id?: string | null
+          confidence?: number | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          conflict_group?: string | null
+          created_at?: string
+          document_id?: string | null
+          field_group: string
+          field_key: string
+          field_label?: string | null
+          id?: string
+          intake_event_id?: string | null
+          medical_report_id?: string | null
+          observed_at?: string | null
+          person_id?: string | null
+          review_note?: string | null
+          source: Database["public"]["Enums"]["evidence_source"]
+          source_quote?: string | null
+          status?: Database["public"]["Enums"]["fact_status"]
+          updated_at?: string
+          value_json?: Json | null
+          value_text?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          communication_id?: string | null
+          confidence?: number | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          conflict_group?: string | null
+          created_at?: string
+          document_id?: string | null
+          field_group?: string
+          field_key?: string
+          field_label?: string | null
+          id?: string
+          intake_event_id?: string | null
+          medical_report_id?: string | null
+          observed_at?: string | null
+          person_id?: string | null
+          review_note?: string | null
+          source?: Database["public"]["Enums"]["evidence_source"]
+          source_quote?: string | null
+          status?: Database["public"]["Enums"]["fact_status"]
+          updated_at?: string
+          value_json?: Json | null
+          value_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extracted_facts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_facts_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_facts_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_facts_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_facts_intake_event_id_fkey"
+            columns: ["intake_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intake_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_facts_medical_report_id_fkey"
+            columns: ["medical_report_id"]
+            isOneToOne: false
+            referencedRelation: "medical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extracted_facts_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
             referencedColumns: ["id"]
           },
         ]
@@ -1328,6 +1828,80 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_match_candidates: {
+        Row: {
+          candidate_person_id: string | null
+          created_at: string
+          id: string
+          intake_event_id: string | null
+          match_score: number | null
+          matched_on: Json | null
+          new_person_id: string | null
+          note: string | null
+          resolution: string
+          resolved_at: string | null
+          resolved_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          candidate_person_id?: string | null
+          created_at?: string
+          id?: string
+          intake_event_id?: string | null
+          match_score?: number | null
+          matched_on?: Json | null
+          new_person_id?: string | null
+          note?: string | null
+          resolution?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          candidate_person_id?: string | null
+          created_at?: string
+          id?: string
+          intake_event_id?: string | null
+          match_score?: number | null
+          matched_on?: Json | null
+          new_person_id?: string | null
+          note?: string | null
+          resolution?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_match_candidates_candidate_person_id_fkey"
+            columns: ["candidate_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "identity_match_candidates_intake_event_id_fkey"
+            columns: ["intake_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intake_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "identity_match_candidates_new_person_id_fkey"
+            columns: ["new_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "identity_match_candidates_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       languages: {
         Row: {
           created_at: string
@@ -1360,6 +1934,239 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      lead_attribution: {
+        Row: {
+          ad_id: string | null
+          ad_name: string | null
+          adset_id: string | null
+          adset_name: string | null
+          campaign_id: string | null
+          campaign_name: string | null
+          case_id: string | null
+          channel: Database["public"]["Enums"]["intake_channel"]
+          created_at: string
+          form_id: string | null
+          id: string
+          intake_event_id: string | null
+          is_first_touch: boolean
+          landing_url: string | null
+          person_id: string | null
+          platform: string | null
+          referral_partner_id: string | null
+          referrer_url: string | null
+          updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          ad_id?: string | null
+          ad_name?: string | null
+          adset_id?: string | null
+          adset_name?: string | null
+          campaign_id?: string | null
+          campaign_name?: string | null
+          case_id?: string | null
+          channel: Database["public"]["Enums"]["intake_channel"]
+          created_at?: string
+          form_id?: string | null
+          id?: string
+          intake_event_id?: string | null
+          is_first_touch?: boolean
+          landing_url?: string | null
+          person_id?: string | null
+          platform?: string | null
+          referral_partner_id?: string | null
+          referrer_url?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          ad_id?: string | null
+          ad_name?: string | null
+          adset_id?: string | null
+          adset_name?: string | null
+          campaign_id?: string | null
+          campaign_name?: string | null
+          case_id?: string | null
+          channel?: Database["public"]["Enums"]["intake_channel"]
+          created_at?: string
+          form_id?: string | null
+          id?: string
+          intake_event_id?: string | null
+          is_first_touch?: boolean
+          landing_url?: string | null
+          person_id?: string | null
+          platform?: string | null
+          referral_partner_id?: string | null
+          referrer_url?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_attribution_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_attribution_intake_event_id_fkey"
+            columns: ["intake_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intake_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_attribution_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_attribution_referral_partner_id_fkey"
+            columns: ["referral_partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_intake_events: {
+        Row: {
+          case_id: string | null
+          channel: Database["public"]["Enums"]["intake_channel"]
+          communication_id: string | null
+          contact_email: string | null
+          contact_handle: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_whatsapp: string | null
+          created_at: string
+          created_by: string | null
+          document_id: string | null
+          external_event_id: string | null
+          id: string
+          is_demo: boolean
+          locale: string | null
+          media_mime_type: string | null
+          media_storage_path: string | null
+          person_id: string | null
+          processed_at: string | null
+          provider: string | null
+          raw_content: string | null
+          raw_payload: Json | null
+          received_at: string
+          status: Database["public"]["Enums"]["intake_status"]
+          status_reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          case_id?: string | null
+          channel: Database["public"]["Enums"]["intake_channel"]
+          communication_id?: string | null
+          contact_email?: string | null
+          contact_handle?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string | null
+          external_event_id?: string | null
+          id?: string
+          is_demo?: boolean
+          locale?: string | null
+          media_mime_type?: string | null
+          media_storage_path?: string | null
+          person_id?: string | null
+          processed_at?: string | null
+          provider?: string | null
+          raw_content?: string | null
+          raw_payload?: Json | null
+          received_at?: string
+          status?: Database["public"]["Enums"]["intake_status"]
+          status_reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string | null
+          channel?: Database["public"]["Enums"]["intake_channel"]
+          communication_id?: string | null
+          contact_email?: string | null
+          contact_handle?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string | null
+          external_event_id?: string | null
+          id?: string
+          is_demo?: boolean
+          locale?: string | null
+          media_mime_type?: string | null
+          media_storage_path?: string | null
+          person_id?: string | null
+          processed_at?: string | null
+          provider?: string | null
+          raw_content?: string | null
+          raw_payload?: Json | null
+          received_at?: string
+          status?: Database["public"]["Enums"]["intake_status"]
+          status_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_intake_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intake_events_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intake_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intake_events_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intake_events_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       logistics: {
         Row: {
@@ -1650,6 +2457,7 @@ export type Database = {
           first_name: string
           gender: string | null
           id: string
+          is_demo: boolean
           last_name: string | null
           marketing_consent: boolean
           middle_name: string | null
@@ -1682,6 +2490,7 @@ export type Database = {
           first_name: string
           gender?: string | null
           id?: string
+          is_demo?: boolean
           last_name?: string | null
           marketing_consent?: boolean
           middle_name?: string | null
@@ -1714,6 +2523,7 @@ export type Database = {
           first_name?: string
           gender?: string | null
           id?: string
+          is_demo?: boolean
           last_name?: string | null
           marketing_consent?: boolean
           middle_name?: string | null
@@ -2181,6 +2991,89 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_transcripts: {
+        Row: {
+          audio_mime_type: string | null
+          audio_storage_path: string | null
+          case_id: string | null
+          communication_id: string | null
+          created_at: string
+          duration_seconds: number | null
+          error_message: string | null
+          id: string
+          intake_event_id: string | null
+          language: string | null
+          model: string | null
+          person_id: string | null
+          status: Database["public"]["Enums"]["extraction_status"]
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_mime_type?: string | null
+          audio_storage_path?: string | null
+          case_id?: string | null
+          communication_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          id?: string
+          intake_event_id?: string | null
+          language?: string | null
+          model?: string | null
+          person_id?: string | null
+          status?: Database["public"]["Enums"]["extraction_status"]
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_mime_type?: string | null
+          audio_storage_path?: string | null
+          case_id?: string | null
+          communication_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          id?: string
+          intake_event_id?: string | null
+          language?: string | null
+          model?: string | null
+          person_id?: string | null
+          status?: Database["public"]["Enums"]["extraction_status"]
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_transcripts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_transcripts_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_transcripts_intake_event_id_fkey"
+            columns: ["intake_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intake_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_transcripts_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_templates: {
         Row: {
           clinical_path: Database["public"]["Enums"]["clinical_path"] | null
@@ -2319,6 +3212,33 @@ export type Database = {
         | "insurance"
         | "consent_form"
         | "other"
+      evidence_source:
+        | "patient_message"
+        | "voice_transcript"
+        | "medical_report"
+        | "discharge_summary"
+        | "prescription"
+        | "lab_report"
+        | "pathology_report"
+        | "radiology_report"
+        | "other_document"
+        | "existing_record"
+        | "doctor_opinion"
+        | "hospital_opinion"
+        | "manual_entry"
+        | "lead_form"
+      extraction_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "unsupported"
+      fact_status:
+        | "proposed"
+        | "confirmed"
+        | "rejected"
+        | "conflicted"
+        | "superseded"
       finance_status:
         | "pending"
         | "partial"
@@ -2340,6 +3260,25 @@ export type Database = {
         | "cancelled"
         | "rescheduled"
       hospital_tier: "tier_1" | "tier_2" | "tier_3" | "partner" | "preferred"
+      intake_channel:
+        | "website"
+        | "whatsapp"
+        | "messenger"
+        | "instagram"
+        | "facebook"
+        | "facebook_lead_ad"
+        | "instagram_lead_ad"
+        | "referral"
+        | "manual"
+        | "email"
+        | "other"
+      intake_status:
+        | "received"
+        | "processing"
+        | "processed"
+        | "needs_review"
+        | "failed"
+        | "duplicate_ignored"
       lead_source:
         | "whatsapp"
         | "website"
@@ -2353,6 +3292,10 @@ export type Database = {
         | "walk_in"
         | "partner"
         | "other"
+        | "messenger"
+        | "facebook_lead_ad"
+        | "instagram_lead_ad"
+        | "manual"
       logistics_status:
         | "pending"
         | "booked"
@@ -2414,6 +3357,7 @@ export type Database = {
         | "in_progress"
         | "completed"
       task_status: "open" | "in_progress" | "blocked" | "done" | "cancelled"
+      triage_decider: "ai" | "human"
       urgency_level: "low" | "medium" | "high" | "critical"
       workflow_stage:
         | "lead_captured"
@@ -2646,6 +3590,36 @@ export const Constants = {
         "consent_form",
         "other",
       ],
+      evidence_source: [
+        "patient_message",
+        "voice_transcript",
+        "medical_report",
+        "discharge_summary",
+        "prescription",
+        "lab_report",
+        "pathology_report",
+        "radiology_report",
+        "other_document",
+        "existing_record",
+        "doctor_opinion",
+        "hospital_opinion",
+        "manual_entry",
+        "lead_form",
+      ],
+      extraction_status: [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "unsupported",
+      ],
+      fact_status: [
+        "proposed",
+        "confirmed",
+        "rejected",
+        "conflicted",
+        "superseded",
+      ],
       finance_status: [
         "pending",
         "partial",
@@ -2670,6 +3644,27 @@ export const Constants = {
         "rescheduled",
       ],
       hospital_tier: ["tier_1", "tier_2", "tier_3", "partner", "preferred"],
+      intake_channel: [
+        "website",
+        "whatsapp",
+        "messenger",
+        "instagram",
+        "facebook",
+        "facebook_lead_ad",
+        "instagram_lead_ad",
+        "referral",
+        "manual",
+        "email",
+        "other",
+      ],
+      intake_status: [
+        "received",
+        "processing",
+        "processed",
+        "needs_review",
+        "failed",
+        "duplicate_ignored",
+      ],
       lead_source: [
         "whatsapp",
         "website",
@@ -2683,6 +3678,10 @@ export const Constants = {
         "walk_in",
         "partner",
         "other",
+        "messenger",
+        "facebook_lead_ad",
+        "instagram_lead_ad",
+        "manual",
       ],
       logistics_status: [
         "pending",
@@ -2753,6 +3752,7 @@ export const Constants = {
         "completed",
       ],
       task_status: ["open", "in_progress", "blocked", "done", "cancelled"],
+      triage_decider: ["ai", "human"],
       urgency_level: ["low", "medium", "high", "critical"],
       workflow_stage: [
         "lead_captured",
