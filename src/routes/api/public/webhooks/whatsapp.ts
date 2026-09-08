@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 const PROVIDER = "meta_whatsapp";
 const MAX_BODY_BYTES = 1_000_000;
@@ -77,6 +77,10 @@ function timestampToIso(timestamp: string | undefined) {
   return new Date(seconds * 1000).toISOString();
 }
 
+function toJson(value: object): Json {
+  return JSON.parse(JSON.stringify(value)) as Json;
+}
+
 async function findPersonAndCase(
   supabaseAdmin: AdminClient,
   phone: string,
@@ -146,7 +150,7 @@ async function handleMessage(
     occurred_at: timestampToIso(message.timestamp),
     provider: PROVIDER,
     provider_message_type: message.type ?? "unknown",
-    provider_payload: message,
+    provider_payload: toJson(message),
   });
 
   if (error) throw error;
@@ -163,7 +167,7 @@ async function handleStatus(
     provider_message_type: "status",
     message_status: status.status,
     status_updated_at: timestampToIso(status.timestamp),
-    provider_payload: status,
+    provider_payload: toJson(status),
   };
 
   const { data: updated, error: updateError } = await supabaseAdmin
