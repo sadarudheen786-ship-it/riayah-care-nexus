@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
 const PROVIDER = "meta_whatsapp";
 const MAX_BODY_BYTES = 1_000_000;
@@ -40,6 +42,8 @@ type WhatsAppWebhookPayload = {
   }>;
 };
 
+type AdminClient = SupabaseClient<Database>;
+
 function json(data: unknown, status = 200) {
   return Response.json(data, {
     status,
@@ -74,7 +78,7 @@ function timestampToIso(timestamp: string | undefined) {
 }
 
 async function findPersonAndCase(
-  supabaseAdmin: typeof import("@supabase/supabase-js").SupabaseClient,
+  supabaseAdmin: AdminClient,
   phone: string,
 ) {
   const normalized = normalizePhone(phone);
@@ -111,7 +115,7 @@ async function findPersonAndCase(
 }
 
 async function handleMessage(
-  supabaseAdmin: typeof import("@supabase/supabase-js").SupabaseClient,
+  supabaseAdmin: AdminClient,
   message: WhatsAppMessage,
   displayPhoneNumber: string | null,
 ) {
@@ -149,7 +153,7 @@ async function handleMessage(
 }
 
 async function handleStatus(
-  supabaseAdmin: typeof import("@supabase/supabase-js").SupabaseClient,
+  supabaseAdmin: AdminClient,
   status: WhatsAppStatus,
 ) {
   if (!status.id || !status.status) return;
