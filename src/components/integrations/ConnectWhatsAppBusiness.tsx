@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, MessageCircle, QrCode, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import {
   META_APP_ID,
   META_SIGNUP_CONFIG_ID,
