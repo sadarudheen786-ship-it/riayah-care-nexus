@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, MessageCircle, QrCode, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import {
   META_APP_ID,
   META_SIGNUP_CONFIG_ID,
@@ -25,6 +24,14 @@ declare global {
 }
 
 const SDK_SRC = "https://connect.facebook.net/en_US/sdk.js";
+
+type PhoneStatus = {
+  id?: string;
+  display_phone_number?: string;
+  verified_name?: string;
+  platform_type?: string;
+  status?: string;
+};
 
 type SessionInfo = { waba_id?: string; phone_number_id?: string };
 
@@ -66,32 +73,21 @@ export function ConnectWhatsAppBusiness() {
   const readStatus = useServerFn(getWhatsAppConnectionStatus);
   const sessionRef = useRef<SessionInfo>({});
   const [busy, setBusy] = useState(false);
-  const [signedIn, setSignedIn] = useState(true);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [connection, setConnection] = useState<StoredConnection | null>(null);
+  const [phone, setPhone] = useState<PhoneStatus | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [details, setDetails] = useState<string[]>([]);
 
   const refresh = useCallback(async () => {
     setLoadingStatus(true);
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        setSignedIn(false);
-        setConnection(null);
-        setMessage("Sign in to view or change the WhatsApp connection.");
-        return;
-      }
-      setSignedIn(true);
       const status = await readStatus({ data: undefined });
       setConnection(status.connection);
-      if (!status.connection && status.error) setMessage(status.error);
-    } catch (error) {
-      setMessage(
-        error instanceof Error && /unauthorized/i.test(error.message)
-          ? "Sign in to view the WhatsApp connection status."
-          : "Could not read the WhatsApp connection status.",
-      );
+      setPhone(status.phone ?? null);
+      if (!status.connection && !status.phone && status.error) setMessage(status.error);
+    } catch {
+      setMessage("Could not read the WhatsApp connection status.");
     } finally {
       setLoadingStatus(false);
     }
@@ -183,7 +179,7 @@ export function ConnectWhatsAppBusiness() {
     }
   }, [complete, refresh]);
 
-  const connected = Boolean(connection);
+  const connected = Boolean(connection ?? phone);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-4">
@@ -215,6 +211,16 @@ export function ConnectWhatsAppBusiness() {
                 <li className="text-xs text-warning">{connection.last_error}</li>
               )}
             </ul>
+          ) : phone ? (
+            <ul className="mt-1.5 space-y-1">
+              <li className="text-xs text-muted-foreground">
+                Number: {phone.display_phone_number ?? phone.id}
+                {phone.verified_name ? ` — ${phone.verified_name}` : ""}
+              </li>
+              <li className="text-xs text-muted-foreground">
+                Platform: {phone.platform_type ?? "unknown"} · {phone.status ?? "status unknown"}
+              </li>
+            </ul>
           ) : (
             <p className="mt-0.5 text-xs text-muted-foreground">
               Opens Meta&apos;s official signup window. Choose the existing Riayah Care business
@@ -228,7 +234,7 @@ export function ConnectWhatsAppBusiness() {
               size="sm"
               className="gap-1.5"
               onClick={start}
-              disabled={busy || loadingStatus || !signedIn}
+              disabled={busy || loadingStatus}
             >
               {busy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
