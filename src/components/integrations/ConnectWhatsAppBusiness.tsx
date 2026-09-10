@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, MessageCircle, QrCode, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import {
   META_APP_ID,
   META_SIGNUP_CONFIG_ID,
@@ -65,6 +66,7 @@ export function ConnectWhatsAppBusiness() {
   const readStatus = useServerFn(getWhatsAppConnectionStatus);
   const sessionRef = useRef<SessionInfo>({});
   const [busy, setBusy] = useState(false);
+  const [signedIn, setSignedIn] = useState(true);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [connection, setConnection] = useState<StoredConnection | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -73,6 +75,14 @@ export function ConnectWhatsAppBusiness() {
   const refresh = useCallback(async () => {
     setLoadingStatus(true);
     try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        setSignedIn(false);
+        setConnection(null);
+        setMessage("Sign in to view or change the WhatsApp connection.");
+        return;
+      }
+      setSignedIn(true);
       const status = await readStatus({ data: undefined });
       setConnection(status.connection);
       if (!status.connection && status.error) setMessage(status.error);
@@ -214,7 +224,12 @@ export function ConnectWhatsAppBusiness() {
           )}
 
           <div className="mt-3 flex items-center gap-2">
-            <Button size="sm" className="gap-1.5" onClick={start} disabled={busy || loadingStatus}>
+            <Button
+              size="sm"
+              className="gap-1.5"
+              onClick={start}
+              disabled={busy || loadingStatus || !signedIn}
+            >
               {busy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
