@@ -149,9 +149,12 @@ function IntegrationCard({
           </Button>
         )}
       </div>
+
+      {footer && <div className="mt-4">{footer}</div>}
     </div>
   );
 }
+
 
 interface HealthCardProps {
   icon: LucideIcon;
