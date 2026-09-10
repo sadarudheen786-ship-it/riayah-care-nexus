@@ -789,7 +789,7 @@ function LeadDetailSheet({
                           <div className="text-xs uppercase tracking-wide text-muted-foreground">
                             {titleCase(fact.field_key)}
                           </div>
-                          <div className="text-sm font-medium">{fact.field_value ?? "—"}</div>
+                          <div className="text-sm font-medium">{fact.value_text ?? "—"}</div>
                         </div>
                         <Badge
                           variant="outline"
@@ -808,7 +808,7 @@ function LeadDetailSheet({
                       )}
                       <div className="mt-2 flex items-center justify-between">
                         <span className="text-[11px] text-muted-foreground">
-                          Source: {titleCase(fact.evidence_source)}
+                          Source: {titleCase(fact.source)}
                         </span>
                         {fact.status !== "confirmed" && (
                           <div className="flex gap-2">
