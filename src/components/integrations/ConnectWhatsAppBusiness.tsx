@@ -224,7 +224,12 @@ export function ConnectWhatsAppBusiness() {
           )}
 
           <div className="mt-3 flex items-center gap-2">
-            <Button size="sm" className="gap-1.5" onClick={start} disabled={busy || loadingStatus}>
+            <Button
+              size="sm"
+              className="gap-1.5"
+              onClick={start}
+              disabled={busy || loadingStatus || !signedIn}
+            >
               {busy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
