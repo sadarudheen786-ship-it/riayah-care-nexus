@@ -101,6 +101,7 @@ interface IntegrationCardProps {
   fields: { label: string; value: string }[];
   primaryAction: string;
   secondaryAction?: string;
+  footer?: React.ReactNode;
 }
 
 function IntegrationCard({
@@ -111,6 +112,7 @@ function IntegrationCard({
   fields,
   primaryAction,
   secondaryAction,
+  footer,
 }: IntegrationCardProps) {
   return (
     <div className="surface-card flex flex-col p-5">
