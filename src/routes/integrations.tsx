@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Widget } from "@/components/common/Widget";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ConnectWhatsAppBusiness } from "@/components/integrations/ConnectWhatsAppBusiness";
 
 export const Route = createFileRoute("/integrations")({
   head: () => ({
@@ -212,6 +213,7 @@ function IntegrationHub() {
             { label: "Last Sync", value: "Never" },
           ]}
           primaryAction="Connect"
+          footer={<ConnectWhatsAppBusiness />}
         />
 
         <IntegrationCard
