@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Widget } from "@/components/common/Widget";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ConnectWhatsAppBusiness } from "@/components/integrations/ConnectWhatsAppBusiness";
 
 export const Route = createFileRoute("/integrations")({
   head: () => ({
@@ -101,6 +102,7 @@ interface IntegrationCardProps {
   fields: { label: string; value: string }[];
   primaryAction: string;
   secondaryAction?: string;
+  footer?: React.ReactNode;
 }
 
 function IntegrationCard({
@@ -111,6 +113,7 @@ function IntegrationCard({
   fields,
   primaryAction,
   secondaryAction,
+  footer,
 }: IntegrationCardProps) {
   return (
     <div className="surface-card flex flex-col p-5">
@@ -147,9 +150,12 @@ function IntegrationCard({
           </Button>
         )}
       </div>
+
+      {footer && <div className="mt-4">{footer}</div>}
     </div>
   );
 }
+
 
 interface HealthCardProps {
   icon: LucideIcon;
@@ -207,6 +213,7 @@ function IntegrationHub() {
             { label: "Last Sync", value: "Never" },
           ]}
           primaryAction="Connect"
+          footer={<ConnectWhatsAppBusiness />}
         />
 
         <IntegrationCard
