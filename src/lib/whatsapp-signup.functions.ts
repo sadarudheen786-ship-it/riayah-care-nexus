@@ -7,7 +7,6 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 
@@ -84,9 +83,9 @@ async function readGraph(token: string, wabaId: string) {
  * of the WABA and phone number.
  */
 export const completeWhatsAppSignup = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => signupInput.parse(input))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const appSecret = process.env["META_APP_SECRET"];
     const storedToken = process.env["WHATSAPP_ACCESS_TOKEN"];
 
@@ -150,11 +149,10 @@ export const completeWhatsAppSignup = createServerFn({ method: "POST" })
         coexistence: platform === "SMB_APP" || platform === "COEXISTENCE",
         connection_status: "connected",
         last_error: readError,
-        connected_by: context.userId,
         last_synced_at: new Date().toISOString(),
       };
 
-      const { data: upserted, error } = await context.supabase
+      const { data: upserted, error } = await supabaseAdmin
         .from("whatsapp_connections")
         .upsert(row, { onConflict: "waba_id,phone_number_id" })
         .select(
@@ -182,13 +180,13 @@ export const completeWhatsAppSignup = createServerFn({ method: "POST" })
  * No secret values are returned.
  */
 export const getWhatsAppConnectionStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const accessToken = process.env["WHATSAPP_ACCESS_TOKEN"];
     const phoneNumberId = process.env["WHATSAPP_PHONE_NUMBER_ID"];
     const credentialsConfigured = Boolean(accessToken && phoneNumberId);
 
-    const { data: rows } = await context.supabase
+    const { data: rows } = await supabaseAdmin
       .from("whatsapp_connections")
       .select(
         "id,waba_id,waba_name,waba_status,phone_number_id,display_phone_number,verified_name,platform_type,phone_status,code_verification_status,coexistence,connection_status,last_error,connected_at,last_synced_at",
@@ -220,7 +218,7 @@ export const getWhatsAppConnectionStatus = createServerFn({ method: "POST" })
           last_error: refreshed.readError,
           last_synced_at: new Date().toISOString(),
         };
-        const { data: updated } = await context.supabase
+        const { data: updated } = await supabaseAdmin
           .from("whatsapp_connections")
           .update(update)
           .eq("id", connection.id)
