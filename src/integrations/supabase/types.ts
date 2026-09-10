@@ -3074,6 +3074,69 @@ export type Database = {
           },
         ]
       }
+      whatsapp_connections: {
+        Row: {
+          code_verification_status: string | null
+          coexistence: boolean
+          connected_at: string
+          connected_by: string | null
+          connection_status: string
+          created_at: string
+          display_phone_number: string | null
+          id: string
+          last_error: string | null
+          last_synced_at: string
+          phone_number_id: string | null
+          phone_status: string | null
+          platform_type: string | null
+          updated_at: string
+          verified_name: string | null
+          waba_id: string
+          waba_name: string | null
+          waba_status: string | null
+        }
+        Insert: {
+          code_verification_status?: string | null
+          coexistence?: boolean
+          connected_at?: string
+          connected_by?: string | null
+          connection_status?: string
+          created_at?: string
+          display_phone_number?: string | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string
+          phone_number_id?: string | null
+          phone_status?: string | null
+          platform_type?: string | null
+          updated_at?: string
+          verified_name?: string | null
+          waba_id: string
+          waba_name?: string | null
+          waba_status?: string | null
+        }
+        Update: {
+          code_verification_status?: string | null
+          coexistence?: boolean
+          connected_at?: string
+          connected_by?: string | null
+          connection_status?: string
+          created_at?: string
+          display_phone_number?: string | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string
+          phone_number_id?: string | null
+          phone_status?: string | null
+          platform_type?: string | null
+          updated_at?: string
+          verified_name?: string | null
+          waba_id?: string
+          waba_name?: string | null
+          waba_status?: string | null
+        }
+        Relationships: []
+      }
       workflow_templates: {
         Row: {
           clinical_path: Database["public"]["Enums"]["clinical_path"] | null
