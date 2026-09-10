@@ -66,6 +66,7 @@ export function ConnectWhatsAppBusiness() {
   const readStatus = useServerFn(getWhatsAppConnectionStatus);
   const sessionRef = useRef<SessionInfo>({});
   const [busy, setBusy] = useState(false);
+  const [signedIn, setSignedIn] = useState(true);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [connection, setConnection] = useState<StoredConnection | null>(null);
   const [message, setMessage] = useState<string | null>(null);
