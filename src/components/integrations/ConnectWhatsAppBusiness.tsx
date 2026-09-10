@@ -35,6 +35,13 @@ type PhoneStatus = {
 
 type SessionInfo = { waba_id?: string; phone_number_id?: string };
 
+type SignupOutcome =
+  | { kind: "finished"; data: SessionInfo }
+  | { kind: "cancelled"; message: string }
+  | { kind: "error"; message: string };
+
+const SIGNUP_EVENT_TIMEOUT_MS = 30_000;
+
 function loadSdk(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.FB) return resolve();
@@ -72,6 +79,8 @@ export function ConnectWhatsAppBusiness() {
   const complete = useServerFn(completeWhatsAppSignup);
   const readStatus = useServerFn(getWhatsAppConnectionStatus);
   const sessionRef = useRef<SessionInfo>({});
+  const outcomeRef = useRef<SignupOutcome | null>(null);
+  const outcomeResolverRef = useRef<((outcome: SignupOutcome) => void) | null>(null);
   const [busy, setBusy] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [connection, setConnection] = useState<StoredConnection | null>(null);
@@ -100,19 +109,29 @@ export function ConnectWhatsAppBusiness() {
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (!isFacebookOrigin(event.origin)) return;
-      if (typeof event.data !== "string") return;
       try {
-        const payload = JSON.parse(event.data) as {
+        const payload = (typeof event.data === "string" ? JSON.parse(event.data) : event.data) as {
           type?: string;
           event?: string;
-          data?: SessionInfo;
+          data?: SessionInfo & { error_message?: string; error_id?: string };
         };
         if (payload.type !== "WA_EMBEDDED_SIGNUP") return;
+        let outcome: SignupOutcome | null = null;
         if (payload.event === "FINISH" || payload.event === "FINISH_ONLY_WABA") {
           sessionRef.current = payload.data ?? {};
+          outcome = { kind: "finished", data: sessionRef.current };
         } else if (payload.event === "CANCEL") {
-          setMessage("Signup was closed before it finished.");
+          outcome = { kind: "cancelled", message: "Signup was closed before it finished." };
+        } else if (payload.event === "ERROR") {
+          outcome = {
+            kind: "error",
+            message: payload.data?.error_message ?? "Meta could not complete WhatsApp signup.",
+          };
         }
+        if (!outcome) return;
+        outcomeRef.current = outcome;
+        outcomeResolverRef.current?.(outcome);
+        outcomeResolverRef.current = null;
       } catch {
         /* non-JSON messages from Facebook are ignored */
       }
@@ -121,11 +140,30 @@ export function ConnectWhatsAppBusiness() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
+  const waitForSignupOutcome = useCallback(() => {
+    const existing = outcomeRef.current;
+    if (existing) return Promise.resolve(existing);
+
+    return new Promise<SignupOutcome | null>((resolve) => {
+      const timeout = window.setTimeout(() => {
+        outcomeResolverRef.current = null;
+        resolve(null);
+      }, SIGNUP_EVENT_TIMEOUT_MS);
+
+      outcomeResolverRef.current = (outcome) => {
+        window.clearTimeout(timeout);
+        resolve(outcome);
+      };
+    });
+  }, []);
+
   const start = useCallback(async () => {
     setBusy(true);
     setMessage(null);
     setDetails([]);
     sessionRef.current = {};
+    outcomeRef.current = null;
+    outcomeResolverRef.current = null;
     try {
       await loadSdk();
       const code = await new Promise<string | null>((resolve) => {
@@ -141,16 +179,27 @@ export function ConnectWhatsAppBusiness() {
         });
       });
 
-      if (!code && !sessionRef.current.waba_id) {
-        setMessage("Signup was not completed. No changes were made.");
+      const outcome = outcomeRef.current ?? (await waitForSignupOutcome());
+      if (outcome?.kind === "cancelled" || outcome?.kind === "error") {
+        setMessage(outcome.message);
+        return;
+      }
+
+      const session = outcome?.kind === "finished" ? outcome.data : sessionRef.current;
+      if (!session.waba_id) {
+        setMessage(
+          code
+            ? "Meta authorized the account but did not return the WhatsApp Business account details. No connection was saved."
+            : "Meta did not return a completed signup response. No changes were made.",
+        );
         return;
       }
 
       const result = await complete({
         data: {
           code: code ?? undefined,
-          wabaId: sessionRef.current.waba_id,
-          phoneNumberId: sessionRef.current.phone_number_id,
+          wabaId: session.waba_id,
+          phoneNumberId: session.phone_number_id,
         },
       });
 
@@ -177,9 +226,10 @@ export function ConnectWhatsAppBusiness() {
     } finally {
       setBusy(false);
     }
-  }, [complete, refresh]);
+  }, [complete, refresh, waitForSignupOutcome]);
 
-  const connected = Boolean(connection ?? phone);
+  const connected = Boolean(connection);
+  const detected = Boolean(phone);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-4">
@@ -189,7 +239,11 @@ export function ConnectWhatsAppBusiness() {
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold text-foreground">
-            {connected ? "WhatsApp Business connected" : "Connect WhatsApp Business"}
+            {connected
+              ? "WhatsApp Business connected"
+              : detected
+                ? "WhatsApp Business number detected"
+                : "Connect WhatsApp Business"}
           </div>
 
           {connected && connection ? (
@@ -211,7 +265,7 @@ export function ConnectWhatsAppBusiness() {
                 <li className="text-xs text-warning">{connection.last_error}</li>
               )}
             </ul>
-          ) : phone ? (
+          ) : detected && phone ? (
             <ul className="mt-1.5 space-y-1">
               <li className="text-xs text-muted-foreground">
                 Number: {phone.display_phone_number ?? phone.id}
