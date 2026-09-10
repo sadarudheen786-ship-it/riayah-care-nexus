@@ -73,6 +73,14 @@ export function ConnectWhatsAppBusiness() {
   const refresh = useCallback(async () => {
     setLoadingStatus(true);
     try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        setSignedIn(false);
+        setConnection(null);
+        setMessage("Sign in to view or change the WhatsApp connection.");
+        return;
+      }
+      setSignedIn(true);
       const status = await readStatus({ data: undefined });
       setConnection(status.connection);
       if (!status.connection && status.error) setMessage(status.error);
