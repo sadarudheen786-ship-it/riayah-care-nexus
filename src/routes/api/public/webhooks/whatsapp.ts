@@ -174,8 +174,9 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           return json({ error: "Payload too large" }, 413);
         }
 
-        // When META_APP_SECRET is configured the signature must be valid.
+        // META_APP_SECRET is required and every POST must carry a valid Meta signature.
         const signature = await verifyMetaSignature(request, rawBody);
+        if (signature === "unconfigured") return json({ error: "Webhook signature is not configured" }, 503);
         if (signature === "invalid") return json({ error: "Invalid signature" }, 401);
 
         let payload: WhatsAppWebhookPayload;
