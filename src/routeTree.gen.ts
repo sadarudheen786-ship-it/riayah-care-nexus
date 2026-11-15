@@ -9,118 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as ProposalsRouteImport } from './routes/proposals'
-import { Route as PatientsRouteImport } from './routes/patients'
-import { Route as MedicalIntelligenceRouteImport } from './routes/medical-intelligence'
-import { Route as LeadsRouteImport } from './routes/leads'
-import { Route as IntegrationsRouteImport } from './routes/integrations'
-import { Route as HospitalsRouteImport } from './routes/hospitals'
-import { Route as HospitalOpinionsRouteImport } from './routes/hospital-opinions'
-import { Route as FollowUpsRouteImport } from './routes/follow-ups'
-import { Route as FinanceRouteImport } from './routes/finance'
-import { Route as DocumentsRouteImport } from './routes/documents'
-import { Route as DoctorsRouteImport } from './routes/doctors'
-import { Route as DiseaseEngineRouteImport } from './routes/disease-engine'
-import { Route as CommunicationRouteImport } from './routes/communication'
-import { Route as CommandCenterRouteImport } from './routes/command-center'
-import { Route as CaseWorkspaceRouteImport } from './routes/case-workspace'
-import { Route as AutomationRouteImport } from './routes/automation'
-import { Route as AdministrationRouteImport } from './routes/administration'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
-import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api/public/webhooks/meta'
+import { Route as AdministrationRouteImport } from './routes/administration'
+import { Route as AutomationRouteImport } from './routes/automation'
+import { Route as CaseWorkspaceRouteImport } from './routes/case-workspace'
+import { Route as CommandCenterRouteImport } from './routes/command-center'
+import { Route as CommunicationRouteImport } from './routes/communication'
+import { Route as DiseaseEngineRouteImport } from './routes/disease-engine'
+import { Route as DoctorsRouteImport } from './routes/doctors'
+import { Route as DocumentsRouteImport } from './routes/documents'
+import { Route as FinanceRouteImport } from './routes/finance'
+import { Route as FollowUpsRouteImport } from './routes/follow-ups'
+import { Route as HospitalOpinionsRouteImport } from './routes/hospital-opinions'
+import { Route as HospitalsRouteImport } from './routes/hospitals'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as LeadsRouteImport } from './routes/leads'
+import { Route as MedicalIntelligenceRouteImport } from './routes/medical-intelligence'
+import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as ProposalsRouteImport } from './routes/proposals'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ApiPublicIntakeLeadRouteImport } from './routes/api/public/intake/lead'
+import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api/public/webhooks/meta'
+import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProposalsRoute = ProposalsRouteImport.update({
-  id: '/proposals',
-  path: '/proposals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatientsRoute = PatientsRouteImport.update({
-  id: '/patients',
-  path: '/patients',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MedicalIntelligenceRoute = MedicalIntelligenceRouteImport.update({
-  id: '/medical-intelligence',
-  path: '/medical-intelligence',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeadsRoute = LeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IntegrationsRoute = IntegrationsRouteImport.update({
-  id: '/integrations',
-  path: '/integrations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HospitalsRoute = HospitalsRouteImport.update({
-  id: '/hospitals',
-  path: '/hospitals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HospitalOpinionsRoute = HospitalOpinionsRouteImport.update({
-  id: '/hospital-opinions',
-  path: '/hospital-opinions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FollowUpsRoute = FollowUpsRouteImport.update({
-  id: '/follow-ups',
-  path: '/follow-ups',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FinanceRoute = FinanceRouteImport.update({
-  id: '/finance',
-  path: '/finance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocumentsRoute = DocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DoctorsRoute = DoctorsRouteImport.update({
-  id: '/doctors',
-  path: '/doctors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiseaseEngineRoute = DiseaseEngineRouteImport.update({
-  id: '/disease-engine',
-  path: '/disease-engine',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CommunicationRoute = CommunicationRouteImport.update({
-  id: '/communication',
-  path: '/communication',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CommandCenterRoute = CommandCenterRouteImport.update({
-  id: '/command-center',
-  path: '/command-center',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CaseWorkspaceRoute = CaseWorkspaceRouteImport.update({
-  id: '/case-workspace',
-  path: '/case-workspace',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AutomationRoute = AutomationRouteImport.update({
-  id: '/automation',
-  path: '/automation',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdministrationRoute = AdministrationRouteImport.update({
@@ -128,9 +43,104 @@ const AdministrationRoute = AdministrationRouteImport.update({
   path: '/administration',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AutomationRoute = AutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaseWorkspaceRoute = CaseWorkspaceRouteImport.update({
+  id: '/case-workspace',
+  path: '/case-workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommandCenterRoute = CommandCenterRouteImport.update({
+  id: '/command-center',
+  path: '/command-center',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunicationRoute = CommunicationRouteImport.update({
+  id: '/communication',
+  path: '/communication',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiseaseEngineRoute = DiseaseEngineRouteImport.update({
+  id: '/disease-engine',
+  path: '/disease-engine',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DoctorsRoute = DoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsRoute = DocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceRoute = FinanceRouteImport.update({
+  id: '/finance',
+  path: '/finance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FollowUpsRoute = FollowUpsRouteImport.update({
+  id: '/follow-ups',
+  path: '/follow-ups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HospitalOpinionsRoute = HospitalOpinionsRouteImport.update({
+  id: '/hospital-opinions',
+  path: '/hospital-opinions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HospitalsRoute = HospitalsRouteImport.update({
+  id: '/hospitals',
+  path: '/hospitals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeadsRoute = LeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MedicalIntelligenceRoute = MedicalIntelligenceRouteImport.update({
+  id: '/medical-intelligence',
+  path: '/medical-intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatientsRoute = PatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProposalsRoute = ProposalsRouteImport.update({
+  id: '/proposals',
+  path: '/proposals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicIntakeLeadRoute = ApiPublicIntakeLeadRouteImport.update({
+  id: '/api/public/intake/lead',
+  path: '/api/public/intake/lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
+  id: '/api/public/webhooks/meta',
+  path: '/api/public/webhooks/meta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWebhooksWhatsappRoute =
@@ -139,16 +149,6 @@ const ApiPublicWebhooksWhatsappRoute =
     path: '/api/public/webhooks/whatsapp',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
-  id: '/api/public/webhooks/meta',
-  path: '/api/public/webhooks/meta',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicIntakeLeadRoute = ApiPublicIntakeLeadRouteImport.update({
-  id: '/api/public/intake/lead',
-  path: '/api/public/intake/lead',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -332,130 +332,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/proposals': {
-      id: '/proposals'
-      path: '/proposals'
-      fullPath: '/proposals'
-      preLoaderRoute: typeof ProposalsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patients': {
-      id: '/patients'
-      path: '/patients'
-      fullPath: '/patients'
-      preLoaderRoute: typeof PatientsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/medical-intelligence': {
-      id: '/medical-intelligence'
-      path: '/medical-intelligence'
-      fullPath: '/medical-intelligence'
-      preLoaderRoute: typeof MedicalIntelligenceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/leads': {
-      id: '/leads'
-      path: '/leads'
-      fullPath: '/leads'
-      preLoaderRoute: typeof LeadsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/integrations': {
-      id: '/integrations'
-      path: '/integrations'
-      fullPath: '/integrations'
-      preLoaderRoute: typeof IntegrationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hospitals': {
-      id: '/hospitals'
-      path: '/hospitals'
-      fullPath: '/hospitals'
-      preLoaderRoute: typeof HospitalsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hospital-opinions': {
-      id: '/hospital-opinions'
-      path: '/hospital-opinions'
-      fullPath: '/hospital-opinions'
-      preLoaderRoute: typeof HospitalOpinionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/follow-ups': {
-      id: '/follow-ups'
-      path: '/follow-ups'
-      fullPath: '/follow-ups'
-      preLoaderRoute: typeof FollowUpsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/finance': {
-      id: '/finance'
-      path: '/finance'
-      fullPath: '/finance'
-      preLoaderRoute: typeof FinanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/documents': {
-      id: '/documents'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof DocumentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/doctors': {
-      id: '/doctors'
-      path: '/doctors'
-      fullPath: '/doctors'
-      preLoaderRoute: typeof DoctorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/disease-engine': {
-      id: '/disease-engine'
-      path: '/disease-engine'
-      fullPath: '/disease-engine'
-      preLoaderRoute: typeof DiseaseEngineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/communication': {
-      id: '/communication'
-      path: '/communication'
-      fullPath: '/communication'
-      preLoaderRoute: typeof CommunicationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/command-center': {
-      id: '/command-center'
-      path: '/command-center'
-      fullPath: '/command-center'
-      preLoaderRoute: typeof CommandCenterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/case-workspace': {
-      id: '/case-workspace'
-      path: '/case-workspace'
-      fullPath: '/case-workspace'
-      preLoaderRoute: typeof CaseWorkspaceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/automation': {
-      id: '/automation'
-      path: '/automation'
-      fullPath: '/automation'
-      preLoaderRoute: typeof AutomationRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/administration': {
@@ -465,18 +346,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministrationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/automation': {
+      id: '/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AutomationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhooks/whatsapp': {
-      id: '/api/public/webhooks/whatsapp'
-      path: '/api/public/webhooks/whatsapp'
-      fullPath: '/api/public/webhooks/whatsapp'
-      preLoaderRoute: typeof ApiPublicWebhooksWhatsappRouteImport
+    '/case-workspace': {
+      id: '/case-workspace'
+      path: '/case-workspace'
+      fullPath: '/case-workspace'
+      preLoaderRoute: typeof CaseWorkspaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/command-center': {
+      id: '/command-center'
+      path: '/command-center'
+      fullPath: '/command-center'
+      preLoaderRoute: typeof CommandCenterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/communication': {
+      id: '/communication'
+      path: '/communication'
+      fullPath: '/communication'
+      preLoaderRoute: typeof CommunicationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disease-engine': {
+      id: '/disease-engine'
+      path: '/disease-engine'
+      fullPath: '/disease-engine'
+      preLoaderRoute: typeof DiseaseEngineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/doctors': {
+      id: '/doctors'
+      path: '/doctors'
+      fullPath: '/doctors'
+      preLoaderRoute: typeof DoctorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents': {
+      id: '/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof DocumentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/finance': {
+      id: '/finance'
+      path: '/finance'
+      fullPath: '/finance'
+      preLoaderRoute: typeof FinanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/follow-ups': {
+      id: '/follow-ups'
+      path: '/follow-ups'
+      fullPath: '/follow-ups'
+      preLoaderRoute: typeof FollowUpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hospital-opinions': {
+      id: '/hospital-opinions'
+      path: '/hospital-opinions'
+      fullPath: '/hospital-opinions'
+      preLoaderRoute: typeof HospitalOpinionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hospitals': {
+      id: '/hospitals'
+      path: '/hospitals'
+      fullPath: '/hospitals'
+      preLoaderRoute: typeof HospitalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leads': {
+      id: '/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof LeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/medical-intelligence': {
+      id: '/medical-intelligence'
+      path: '/medical-intelligence'
+      fullPath: '/medical-intelligence'
+      preLoaderRoute: typeof MedicalIntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patients': {
+      id: '/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof PatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposals': {
+      id: '/proposals'
+      path: '/proposals'
+      fullPath: '/proposals'
+      preLoaderRoute: typeof ProposalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/intake/lead': {
+      id: '/api/public/intake/lead'
+      path: '/api/public/intake/lead'
+      fullPath: '/api/public/intake/lead'
+      preLoaderRoute: typeof ApiPublicIntakeLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhooks/meta': {
@@ -486,11 +486,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMetaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/intake/lead': {
-      id: '/api/public/intake/lead'
-      path: '/api/public/intake/lead'
-      fullPath: '/api/public/intake/lead'
-      preLoaderRoute: typeof ApiPublicIntakeLeadRouteImport
+    '/api/public/webhooks/whatsapp': {
+      id: '/api/public/webhooks/whatsapp'
+      path: '/api/public/webhooks/whatsapp'
+      fullPath: '/api/public/webhooks/whatsapp'
+      preLoaderRoute: typeof ApiPublicWebhooksWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
