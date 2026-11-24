@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import {
   MessageCircle,
   Sparkles,
@@ -16,6 +19,7 @@ import {
   Plug,
   PlugZap,
   RefreshCw,
+  Copy,
   type LucideIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -23,6 +27,9 @@ import { Widget } from "@/components/common/Widget";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ConnectWhatsAppBusiness } from "@/components/integrations/ConnectWhatsAppBusiness";
+import { getN8nLastExecution } from "@/lib/leads.functions";
+
+const N8N_WEBHOOK_URL = "https://riayah-care-nexus.lovable.app/api/public/intake/n8n-lead";
 
 export const Route = createFileRoute("/integrations")({
   head: () => ({
@@ -87,7 +94,7 @@ function Field({ label, value }: { label: string; value: string }) {
       <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
-      <span className="text-right text-sm font-medium text-foreground">
+      <span className="min-w-0 break-all text-right text-sm font-medium text-foreground">
         {value}
       </span>
     </div>
@@ -185,6 +192,28 @@ function HealthCard({ icon: Icon, label, status, detail }: HealthCardProps) {
 }
 
 function IntegrationHub() {
+  const fetchLastExecution = useServerFn(getN8nLastExecution);
+  const lastExecutionQuery = useQuery({
+    queryKey: ["n8n-last-intake-execution"],
+    queryFn: () => fetchLastExecution(),
+    refetchInterval: 60_000,
+  });
+  const [copiedWebhook, setCopiedWebhook] = useState(false);
+
+  const copyWebhookUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(N8N_WEBHOOK_URL);
+      setCopiedWebhook(true);
+      window.setTimeout(() => setCopiedWebhook(false), 1800);
+    } catch {
+      setCopiedWebhook(false);
+    }
+  };
+
+  const lastExecution = lastExecutionQuery.data
+    ? new Date(lastExecutionQuery.data).toLocaleString()
+    : "Never";
+
   return (
     <>
       <PageHeader
@@ -235,16 +264,29 @@ function IntegrationHub() {
         <IntegrationCard
           icon={Workflow}
           title="n8n Automation"
-          description="Workflow automation and event routing."
+          description="Secure webhook for inbound enquiries and message history."
           status="disconnected"
           fields={[
             { label: "Connection Status", value: "Not Connected" },
-            { label: "Webhook URL", value: "—" },
+            { label: "Webhook URL", value: N8N_WEBHOOK_URL },
             { label: "Active Workflows", value: "0" },
-            { label: "Last Execution", value: "Never" },
+            { label: "Last Execution", value: lastExecution },
           ]}
           primaryAction="Connect"
           secondaryAction="Test Connection"
+          footer={
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={copyWebhookUrl}
+              aria-label={copiedWebhook ? "Webhook URL copied" : "Copy webhook URL"}
+              title={copiedWebhook ? "Copied" : "Copy webhook URL"}
+            >
+              <Copy className="h-3.5 w-3.5" />
+              {copiedWebhook ? "Copied" : "Copy webhook URL"}
+            </Button>
+          }
         />
 
         <IntegrationCard

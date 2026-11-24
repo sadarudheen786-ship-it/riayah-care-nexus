@@ -89,6 +89,22 @@ function titleCase(value: string | null | undefined) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function parseMessageAttachments(value: unknown): Array<{ url: string; type: string }> {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) return [];
+    const attachment = item as Record<string, unknown>;
+    if (typeof attachment.url !== "string" || typeof attachment.type !== "string") return [];
+    try {
+      const url = new URL(attachment.url);
+      if (url.protocol !== "https:" && url.protocol !== "http:") return [];
+      return [{ url: url.toString(), type: attachment.type }];
+    } catch {
+      return [];
+    }
+  });
+}
+
 function EmptyState({ title, hint }: { title: string; hint: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
@@ -657,6 +673,24 @@ function LeadDetailSheet({
   });
 
   const currentTriage = detail.data?.triage.find((t) => t.is_current);
+  const conversationItems = [
+    ...(detail.data?.communications ?? []).map((message) => ({
+      id: `communication:${message.id}`,
+      source: titleCase(message.channel),
+      direction: titleCase(message.direction),
+      occurredAt: message.occurred_at,
+      text: message.body,
+      attachments: [] as Array<{ url: string; type: string }>,
+    })),
+    ...(detail.data?.leadMessages ?? []).map((message) => ({
+      id: `lead-message:${message.id}`,
+      source: titleCase(message.source),
+      direction: titleCase(message.direction),
+      occurredAt: message.received_at,
+      text: message.text,
+      attachments: parseMessageAttachments(message.attachments),
+    })),
+  ].sort((left, right) => new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime());
 
   return (
     <Sheet open={Boolean(lead)} onOpenChange={(v) => !v && onClose()}>
@@ -839,21 +873,39 @@ function LeadDetailSheet({
               </TabsContent>
 
               <TabsContent value="conversation" className="mt-4 space-y-3">
-                {(detail.data?.communications.length ?? 0) === 0 ? (
+                {conversationItems.length === 0 ? (
                   <EmptyState
                     title="No messages recorded"
                     hint="Incoming and outgoing messages appear here once a channel is connected."
                   />
                 ) : (
-                  detail.data?.communications.map((c) => (
-                    <div key={c.id} className="surface-card p-3">
+                  conversationItems.map((message) => (
+                    <div key={message.id} className="surface-card p-3">
                       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>
-                          {titleCase(c.channel)} · {titleCase(c.direction)}
+                          {message.source} · {message.direction}
                         </span>
-                        <span>{relativeTime(c.occurred_at)}</span>
+                        <span>{relativeTime(message.occurredAt)}</span>
                       </div>
-                      <p className="mt-1 whitespace-pre-wrap text-sm">{c.body ?? "—"}</p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm">
+                        {message.text ?? (message.attachments.length ? "Attachment received" : "—")}
+                      </p>
+                      {message.attachments.length > 0 && (
+                        <ul className="mt-2 space-y-1 text-xs">
+                          {message.attachments.map((attachment, index) => (
+                            <li key={`${attachment.url}-${index}`}>
+                              <a
+                                className="font-medium text-primary underline underline-offset-2"
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {attachment.type}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   ))
                 )}

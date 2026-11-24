@@ -2168,6 +2168,56 @@ export type Database = {
           },
         ]
       }
+      lead_messages: {
+        Row: {
+          attachments: Json
+          created_at: string
+          direction: string
+          external_id: string
+          id: string
+          lead_id: string
+          normalized_phone: string | null
+          raw_payload: Json
+          received_at: string
+          source: string
+          text: string | null
+        }
+        Insert: {
+          attachments?: Json
+          created_at?: string
+          direction?: string
+          external_id: string
+          id?: string
+          lead_id: string
+          normalized_phone?: string | null
+          raw_payload?: Json
+          received_at: string
+          source: string
+          text?: string | null
+        }
+        Update: {
+          attachments?: Json
+          created_at?: string
+          direction?: string
+          external_id?: string
+          id?: string
+          lead_id?: string
+          normalized_phone?: string | null
+          raw_payload?: Json
+          received_at?: string
+          source?: string
+          text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logistics: {
         Row: {
           case_id: string
@@ -3198,7 +3248,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_n8n_lead_message: {
+        Args: {
+          p_attachments?: Json
+          p_country?: string
+          p_email?: string
+          p_existing_lead_id?: string
+          p_existing_person_id?: string
+          p_external_id?: string
+          p_message_text?: string
+          p_name?: string
+          p_normalized_phone?: string
+          p_phone?: string
+          p_raw_payload?: Json
+          p_received_at?: string
+          p_source?: string
+        }
+        Returns: {
+          created: boolean
+          lead_id: string
+        }[]
+      }
     }
     Enums: {
       ai_analysis_type:
@@ -3335,6 +3405,7 @@ export type Database = {
         | "manual"
         | "email"
         | "other"
+        | "lead_ad"
       intake_status:
         | "received"
         | "processing"
@@ -3359,6 +3430,7 @@ export type Database = {
         | "facebook_lead_ad"
         | "instagram_lead_ad"
         | "manual"
+        | "lead_ad"
       logistics_status:
         | "pending"
         | "booked"
@@ -3719,6 +3791,7 @@ export const Constants = {
         "manual",
         "email",
         "other",
+        "lead_ad",
       ],
       intake_status: [
         "received",
@@ -3745,6 +3818,7 @@ export const Constants = {
         "facebook_lead_ad",
         "instagram_lead_ad",
         "manual",
+        "lead_ad",
       ],
       logistics_status: [
         "pending",

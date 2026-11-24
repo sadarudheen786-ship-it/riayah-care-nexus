@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795530027436,
+      "tag": "0000_n8n_lead_messages",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795530225220,
+      "tag": "0001_atomic_n8n_lead_intake",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795530277128,
+      "tag": "0002_optional_n8n_lead_fields",
+      "breakpoints": true
+    }
+  ]
+}

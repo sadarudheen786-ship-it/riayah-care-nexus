@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- External n8n intake stores leads in `public.cases` and inbound history in `public.lead_messages` keyed by case ID; the `/api/public/*` route is the published external entry point, while `/api/intake/lead` remains an alias.

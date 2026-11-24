@@ -133,7 +133,7 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
 
     const caseIds = (cases ?? []).map((c) => c.id);
 
-    const [triage, comms, facts, docs, intake, identity] = await Promise.all([
+    const [triage, comms, leadMessages, facts, docs, intake, identity] = await Promise.all([
       caseIds.length
         ? supabase
             .from("ai_triage_assessments")
@@ -148,6 +148,13 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
             .in("case_id", caseIds)
             .is("deleted_at", null)
             .order("occurred_at", { ascending: false })
+        : Promise.resolve({ data: [], error: null }),
+      caseIds.length
+        ? supabase
+            .from("lead_messages")
+            .select("lead_id, created_at")
+            .in("lead_id", caseIds)
+            .order("created_at", { ascending: false })
         : Promise.resolve({ data: [], error: null }),
       caseIds.length
         ? supabase.from("extracted_facts").select("case_id").in("case_id", caseIds).eq("status", "conflicted")
@@ -173,6 +180,12 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
       if (!comm.case_id) continue;
       if (!lastContact.has(comm.case_id)) lastContact.set(comm.case_id, comm.occurred_at);
       if (comm.direction === "outgoing") contacted.add(comm.case_id);
+    }
+    for (const message of leadMessages.data ?? []) {
+      const current = lastContact.get(message.lead_id);
+      if (!current || new Date(message.created_at).getTime() > new Date(current).getTime()) {
+        lastContact.set(message.lead_id, message.created_at);
+      }
     }
     const conflictCases = new Set((facts.data ?? []).map((f) => f.case_id ?? ""));
     const docCount = new Map<string, number>();
@@ -265,7 +278,7 @@ export const getLeadDetail = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const supabase = context.supabase;
 
-    const [facts, triage, comms, summary, tasks, attribution, transcripts, extractions] =
+    const [facts, triage, comms, summary, tasks, attribution, transcripts, extractions, leadMessages] =
       await Promise.all([
         supabase
           .from("extracted_facts")
@@ -314,6 +327,11 @@ export const getLeadDetail = createServerFn({ method: "GET" })
           .select("id, processor_key, status, detected_document_type, created_at")
           .eq("case_id", data.caseId)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("lead_messages")
+          .select("id, source, direction, text, attachments, received_at")
+          .eq("lead_id", data.caseId)
+          .order("received_at", { ascending: false }),
       ]);
 
     return {
@@ -325,6 +343,7 @@ export const getLeadDetail = createServerFn({ method: "GET" })
       attribution: attribution.data ?? [],
       transcripts: transcripts.data ?? [],
       extractions: extractions.data ?? [],
+      leadMessages: leadMessages.data ?? [],
     };
   });
 
@@ -524,4 +543,17 @@ export const resolveIdentityMatch = createServerFn({ method: "POST" })
       .eq("id", data.matchId);
     if (error) throw error;
     return { ok: true };
+  });
+
+export const getN8nLastExecution = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("lead_messages")
+      .select("created_at")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data?.created_at ?? null;
   });
