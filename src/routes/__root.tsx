@@ -17,6 +17,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { requiresPageAuthentication } from "@/lib/auth-access";
 
 function NotFoundComponent() {
   return (
@@ -83,8 +84,7 @@ const LazyErrorComponent = lazy(() => Promise.resolve({ default: ErrorComponent 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    const path = location.pathname;
-    if (path === "/login" || path === "/reset-password" || path.startsWith("/api/")) return;
+    if (!requiresPageAuthentication(location.pathname)) return;
 
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {

@@ -7,6 +7,8 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasAdminRole } from "@/lib/auth-access";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 
@@ -83,8 +85,18 @@ async function readGraph(token: string, wabaId: string) {
  * of the WABA and phone number.
  */
 export const completeWhatsAppSignup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => signupInput.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: roleRows, error: roleError } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    if (roleError) throw new Error("Unable to verify integration permissions.");
+    if (!hasAdminRole((roleRows ?? []).map((row) => row.role))) {
+      throw new Error("Admin access is required to manage integrations.");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const appSecret = process.env["META_APP_SECRET"];
     const storedToken = process.env["WHATSAPP_ACCESS_TOKEN"];
@@ -180,7 +192,17 @@ export const completeWhatsAppSignup = createServerFn({ method: "POST" })
  * No secret values are returned.
  */
 export const getWhatsAppConnectionStatus = createServerFn({ method: "POST" })
-  .handler(async () => {
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: roleRows, error: roleError } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    if (roleError) throw new Error("Unable to verify integration permissions.");
+    if (!hasAdminRole((roleRows ?? []).map((row) => row.role))) {
+      throw new Error("Admin access is required to manage integrations.");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const accessToken = process.env["WHATSAPP_ACCESS_TOKEN"];
     const phoneNumberId = process.env["WHATSAPP_PHONE_NUMBER_ID"];

@@ -230,7 +230,7 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose, userEmail = null
                   Signed in as
                 </div>
                 <div
-                  className="truncate text-xs font-medium text-sidebar-foreground"
+                  className="break-all text-xs font-medium leading-4 text-sidebar-foreground"
                   title={userEmail ?? undefined}
                 >
                   {userEmail ?? "Verifying session…"}
