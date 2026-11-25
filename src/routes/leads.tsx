@@ -324,15 +324,15 @@ function LeadManagement() {
             title="All Leads"
             description={`${filtered.length} of ${leads.length} enquiries`}
             contentClassName="p-0"
-            actions={
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative">
+          >
+            <div className="flex flex-wrap items-center gap-2 border-b border-border p-4">
+                <div className="relative w-full min-w-0 sm:w-44">
                   <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search leads"
-                    className="h-9 w-44 pl-8"
+                    className="h-9 w-full pl-8"
                   />
                 </div>
                 <Select value={stageFilter} onValueChange={setStageFilter}>
@@ -373,7 +373,7 @@ function LeadManagement() {
                   </SelectContent>
                 </Select>
                 <Select value={temperatureFilter} onValueChange={setTemperatureFilter}>
-                  <SelectTrigger className="h-9 w-36">
+                  <SelectTrigger className="h-9 w-40">
                     <SelectValue placeholder="Temperature" />
                   </SelectTrigger>
                   <SelectContent>
@@ -396,9 +396,7 @@ function LeadManagement() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            }
-          >
+            </div>
             {dashboard.isLoading ? (
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading live enquiries…

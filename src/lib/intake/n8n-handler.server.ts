@@ -197,6 +197,17 @@ function toJson(value: unknown): Json {
   return JSON.parse(JSON.stringify(value)) as Json;
 }
 
+function redactRawAttachmentUrls(
+  rawPayload: Record<string, unknown>,
+  attachments: Array<{ url: string; type: string }>,
+): Json {
+  let serialized = JSON.stringify(rawPayload);
+  for (const attachment of attachments) {
+    serialized = serialized.split(attachment.url).join("[report stored privately]");
+  }
+  return JSON.parse(serialized) as Json;
+}
+
 async function findMessageLead(
   admin: AdminClient,
   source: string,
@@ -321,7 +332,7 @@ export async function handleN8nLeadIntake(request: Request): Promise<Response> {
       p_external_id: payload.external_id,
       p_received_at: payload.received_at,
       p_attachments: toJson([]),
-      p_raw_payload: toJson(payload.raw_payload),
+      p_raw_payload: redactRawAttachmentUrls(payload.raw_payload, payload.attachments),
       p_new_case_fields: toJson(newLeadCaseFields(payload.source, payload.received_at)),
       p_ai_brief: payload.ai_brief ? toJson(payload.ai_brief) : null,
       ...(normalizedPhone ? { p_normalized_phone: normalizedPhone } : {}),
