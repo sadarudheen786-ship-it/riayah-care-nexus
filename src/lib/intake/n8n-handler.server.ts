@@ -5,6 +5,7 @@ import {
   intakeSecretMatches,
   normalizePhoneToE164,
   n8nLeadSchema,
+  newLeadCaseFields,
   type N8nLeadSource,
 } from "./n8n";
 
@@ -141,12 +142,13 @@ export async function handleN8nLeadIntake(request: Request): Promise<Response> {
 
     const existingLeadId = messageLeadId ?? contactMatch?.leadId ?? null;
     const existingPersonId = contactMatch?.personId ?? null;
-    const { data, error } = await admin.rpc("create_n8n_lead_message", {
+    const { data, error } = await admin.rpc("create_n8n_lead_message_with_case_fields", {
       p_source: payload.source,
       p_external_id: payload.external_id,
       p_received_at: payload.received_at,
       p_attachments: toJson(payload.attachments),
       p_raw_payload: toJson(payload.raw_payload),
+      p_new_case_fields: toJson(newLeadCaseFields(payload.source, payload.received_at)),
       ...(normalizedPhone ? { p_normalized_phone: normalizedPhone } : {}),
       ...(existingLeadId ? { p_existing_lead_id: existingLeadId } : {}),
       ...(existingPersonId ? { p_existing_person_id: existingPersonId } : {}),

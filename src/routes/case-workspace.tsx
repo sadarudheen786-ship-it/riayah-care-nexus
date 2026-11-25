@@ -86,6 +86,14 @@ export const Route = createFileRoute("/case-workspace")({
         content:
           "The single source of truth for every Riayah Care case: unified profile, medical reports, communications, tasks, documents and timeline evolving through the full patient lifecycle.",
       },
+      { property: "og:title", content: "Case Workspace — RiayahOS" },
+      {
+        property: "og:description",
+        content:
+          "The single source of truth for every Riayah Care case: unified profile, medical reports, communications, tasks, documents and timeline evolving through the full patient lifecycle.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CaseWorkspace,

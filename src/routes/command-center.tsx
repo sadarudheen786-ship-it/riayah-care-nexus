@@ -75,6 +75,14 @@ export const Route = createFileRoute("/command-center")({
         content:
           "Live operations control room for Riayah Care coordinators — arrivals, hospital opinions, travel, follow-ups and finance alerts in one screen.",
       },
+      { property: "og:title", content: "Executive Command Center — RiayahOS" },
+      {
+        property: "og:description",
+        content:
+          "Live operations control room for Riayah Care coordinators — arrivals, hospital opinions, travel, follow-ups and finance alerts in one screen.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CommandCenter,

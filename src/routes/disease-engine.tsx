@@ -6,6 +6,10 @@ export const Route = createFileRoute("/disease-engine")({
     meta: [
       { title: "Disease Engine — RiayahOS" },
       { name: "description", content: "Structured disease library powering recommendations across the platform." },
+      { property: "og:title", content: "Disease Engine — RiayahOS" },
+      { property: "og:description", content: "Structured disease library powering recommendations across the platform." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

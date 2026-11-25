@@ -57,6 +57,7 @@ describe("n8n lead intake rules", () => {
       enquiry_date: "2026-11-24",
       is_demo: false,
     });
+    assert.equal(newLeadCaseFields("lead_ad", "2026-11-24T10:30:00.000Z").lead_source, "lead_ad");
   });
 
   it("rejects non-HTTP attachment URLs and unknown sources", () => {

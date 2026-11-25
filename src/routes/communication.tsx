@@ -6,6 +6,10 @@ export const Route = createFileRoute("/communication")({
     meta: [
       { title: "Communication — RiayahOS" },
       { name: "description", content: "Unified inbox across WhatsApp, email and calls." },
+      { property: "og:title", content: "Communication — RiayahOS" },
+      { property: "og:description", content: "Unified inbox across WhatsApp, email and calls." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

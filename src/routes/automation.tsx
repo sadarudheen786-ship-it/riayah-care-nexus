@@ -99,6 +99,14 @@ export const Route = createFileRoute("/automation")({
         content:
           "Central rule engine for RiayahOS — define triggers, conditions, and actions that respond to business events.",
       },
+      { property: "og:title", content: "Workflow Automation Engine · RiayahOS" },
+      {
+        property: "og:description",
+        content:
+          "Central rule engine for RiayahOS — define triggers, conditions, and actions that respond to business events.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AutomationPage,

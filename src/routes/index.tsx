@@ -43,6 +43,14 @@ export const Route = createFileRoute("/")({
         content:
           "Real-time overview of Riayah Care operations: leads, active cases, hospital opinions and revenue across GCC markets.",
       },
+      { property: "og:title", content: "Dashboard — RiayahOS" },
+      {
+        property: "og:description",
+        content:
+          "Real-time overview of Riayah Care operations: leads, active cases, hospital opinions and revenue across GCC markets.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,

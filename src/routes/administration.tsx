@@ -75,6 +75,14 @@ export const Route = createFileRoute("/administration")({
         content:
           "Central configuration center for RiayahOS — company, AI, integrations, security and enterprise controls.",
       },
+      { property: "og:title", content: "System Administration — RiayahOS" },
+      {
+        property: "og:description",
+        content:
+          "Central configuration center for RiayahOS — company, AI, integrations, security and enterprise controls.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SystemAdministration,

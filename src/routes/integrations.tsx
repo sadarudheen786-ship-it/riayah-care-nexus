@@ -40,6 +40,14 @@ export const Route = createFileRoute("/integrations")({
         content:
           "Centralized control center for WhatsApp, OpenAI, n8n, Meta, Website, Email and system health integrations.",
       },
+      { property: "og:title", content: "Integration Hub — RiayahOS" },
+      {
+        property: "og:description",
+        content:
+          "Centralized control center for WhatsApp, OpenAI, n8n, Meta, Website, Email and system health integrations.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: IntegrationHub,

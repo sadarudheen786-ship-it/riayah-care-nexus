@@ -22,6 +22,13 @@
       "when": 1795530277128,
       "tag": "0002_optional_n8n_lead_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795606572775,
+      "tag": "0003_validate_n8n_case_defaults",
+      "breakpoints": true
     }
   ]
 }

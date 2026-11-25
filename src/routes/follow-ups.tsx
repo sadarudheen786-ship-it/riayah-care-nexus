@@ -6,6 +6,10 @@ export const Route = createFileRoute("/follow-ups")({
     meta: [
       { title: "Follow-ups — RiayahOS" },
       { name: "description", content: "Scheduled patient and lead follow-ups across teams." },
+      { property: "og:title", content: "Follow-ups — RiayahOS" },
+      { property: "og:description", content: "Scheduled patient and lead follow-ups across teams." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

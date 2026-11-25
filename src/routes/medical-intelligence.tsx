@@ -6,6 +6,10 @@ export const Route = createFileRoute("/medical-intelligence")({
     meta: [
       { title: "Medical Intelligence — RiayahOS" },
       { name: "description", content: "Insights across diseases, treatments and outcomes." },
+      { property: "og:title", content: "Medical Intelligence — RiayahOS" },
+      { property: "og:description", content: "Insights across diseases, treatments and outcomes." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

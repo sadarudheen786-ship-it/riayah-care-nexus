@@ -6,6 +6,10 @@ export const Route = createFileRoute("/proposals")({
     meta: [
       { title: "Proposal Center — RiayahOS" },
       { name: "description", content: "Build, send and track personalized treatment proposals." },
+      { property: "og:title", content: "Proposal Center — RiayahOS" },
+      { property: "og:description", content: "Build, send and track personalized treatment proposals." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

@@ -6,6 +6,10 @@ export const Route = createFileRoute("/hospitals")({
     meta: [
       { title: "Hospitals — RiayahOS" },
       { name: "description", content: "Partner hospital network across Kerala, India." },
+      { property: "og:title", content: "Hospitals — RiayahOS" },
+      { property: "og:description", content: "Partner hospital network across Kerala, India." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (

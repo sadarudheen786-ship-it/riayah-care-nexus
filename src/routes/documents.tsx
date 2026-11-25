@@ -6,6 +6,10 @@ export const Route = createFileRoute("/documents")({
     meta: [
       { title: "Documents — RiayahOS" },
       { name: "description", content: "Secure document vault for medical records and travel paperwork." },
+      { property: "og:title", content: "Documents — RiayahOS" },
+      { property: "og:description", content: "Secure document vault for medical records and travel paperwork." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
