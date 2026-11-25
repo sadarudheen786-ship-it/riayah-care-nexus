@@ -3,7 +3,13 @@ import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { cn } from "@/lib/utils";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  userEmail = null,
+}: {
+  children: ReactNode;
+  userEmail?: string | null;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -13,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         collapsed={collapsed}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        userEmail={userEmail}
       />
 
       <div

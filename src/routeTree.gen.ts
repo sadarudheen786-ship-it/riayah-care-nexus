@@ -24,10 +24,12 @@ import { Route as HospitalOpinionsRouteImport } from './routes/hospital-opinions
 import { Route as HospitalsRouteImport } from './routes/hospitals'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as LeadsRouteImport } from './routes/leads'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MedicalIntelligenceRouteImport } from './routes/medical-intelligence'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ApiIntakeLeadRouteImport } from './routes/api/intake/lead'
 import { Route as ApiPublicIntakeLeadRouteImport } from './routes/api/public/intake/lead'
@@ -110,6 +112,11 @@ const LeadsRoute = LeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MedicalIntelligenceRoute = MedicalIntelligenceRouteImport.update({
   id: '/medical-intelligence',
   path: '/medical-intelligence',
@@ -128,6 +135,11 @@ const ProposalsRoute = ProposalsRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -178,10 +190,12 @@ export interface FileRoutesByFullPath {
   '/hospitals': typeof HospitalsRoute
   '/integrations': typeof IntegrationsRoute
   '/leads': typeof LeadsRoute
+  '/login': typeof LoginRoute
   '/medical-intelligence': typeof MedicalIntelligenceRoute
   '/patients': typeof PatientsRoute
   '/proposals': typeof ProposalsRoute
   '/reports': typeof ReportsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/api/intake/lead': typeof ApiIntakeLeadRoute
   '/api/public/intake/lead': typeof ApiPublicIntakeLeadRoute
@@ -205,10 +219,12 @@ export interface FileRoutesByTo {
   '/hospitals': typeof HospitalsRoute
   '/integrations': typeof IntegrationsRoute
   '/leads': typeof LeadsRoute
+  '/login': typeof LoginRoute
   '/medical-intelligence': typeof MedicalIntelligenceRoute
   '/patients': typeof PatientsRoute
   '/proposals': typeof ProposalsRoute
   '/reports': typeof ReportsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/api/intake/lead': typeof ApiIntakeLeadRoute
   '/api/public/intake/lead': typeof ApiPublicIntakeLeadRoute
@@ -233,10 +249,12 @@ export interface FileRoutesById {
   '/hospitals': typeof HospitalsRoute
   '/integrations': typeof IntegrationsRoute
   '/leads': typeof LeadsRoute
+  '/login': typeof LoginRoute
   '/medical-intelligence': typeof MedicalIntelligenceRoute
   '/patients': typeof PatientsRoute
   '/proposals': typeof ProposalsRoute
   '/reports': typeof ReportsRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/api/intake/lead': typeof ApiIntakeLeadRoute
   '/api/public/intake/lead': typeof ApiPublicIntakeLeadRoute
@@ -262,10 +280,12 @@ export interface FileRouteTypes {
     | '/hospitals'
     | '/integrations'
     | '/leads'
+    | '/login'
     | '/medical-intelligence'
     | '/patients'
     | '/proposals'
     | '/reports'
+    | '/reset-password'
     | '/settings'
     | '/api/intake/lead'
     | '/api/public/intake/lead'
@@ -289,10 +309,12 @@ export interface FileRouteTypes {
     | '/hospitals'
     | '/integrations'
     | '/leads'
+    | '/login'
     | '/medical-intelligence'
     | '/patients'
     | '/proposals'
     | '/reports'
+    | '/reset-password'
     | '/settings'
     | '/api/intake/lead'
     | '/api/public/intake/lead'
@@ -316,10 +338,12 @@ export interface FileRouteTypes {
     | '/hospitals'
     | '/integrations'
     | '/leads'
+    | '/login'
     | '/medical-intelligence'
     | '/patients'
     | '/proposals'
     | '/reports'
+    | '/reset-password'
     | '/settings'
     | '/api/intake/lead'
     | '/api/public/intake/lead'
@@ -344,10 +368,12 @@ export interface RootRouteChildren {
   HospitalsRoute: typeof HospitalsRoute
   IntegrationsRoute: typeof IntegrationsRoute
   LeadsRoute: typeof LeadsRoute
+  LoginRoute: typeof LoginRoute
   MedicalIntelligenceRoute: typeof MedicalIntelligenceRoute
   PatientsRoute: typeof PatientsRoute
   ProposalsRoute: typeof ProposalsRoute
   ReportsRoute: typeof ReportsRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   ApiIntakeLeadRoute: typeof ApiIntakeLeadRoute
   ApiPublicIntakeLeadRoute: typeof ApiPublicIntakeLeadRoute
@@ -463,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/medical-intelligence': {
       id: '/medical-intelligence'
       path: '/medical-intelligence'
@@ -489,6 +522,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -552,10 +592,12 @@ const rootRouteChildren: RootRouteChildren = {
   HospitalsRoute: HospitalsRoute,
   IntegrationsRoute: IntegrationsRoute,
   LeadsRoute: LeadsRoute,
+  LoginRoute: LoginRoute,
   MedicalIntelligenceRoute: MedicalIntelligenceRoute,
   PatientsRoute: PatientsRoute,
   ProposalsRoute: ProposalsRoute,
   ReportsRoute: ReportsRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   ApiIntakeLeadRoute: ApiIntakeLeadRoute,
   ApiPublicIntakeLeadRoute: ApiPublicIntakeLeadRoute,

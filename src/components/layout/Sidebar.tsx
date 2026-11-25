@@ -1,4 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Radar,
@@ -21,10 +23,14 @@ import {
   Workflow,
   Settings,
   X,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NavItem {
   label: string;
@@ -65,10 +71,30 @@ interface Props {
   collapsed: boolean;
   mobileOpen: boolean;
   onMobileClose: () => void;
+  userEmail?: string | null;
 }
 
-export function Sidebar({ collapsed, mobileOpen, onMobileClose }: Props) {
+export function Sidebar({ collapsed, mobileOpen, onMobileClose, userEmail = null }: Props) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    await queryClient.cancelQueries();
+    queryClient.clear();
+
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Unable to sign out. Please try again.");
+      setSigningOut(false);
+      return;
+    }
+
+    await navigate({ to: "/login", replace: true });
+  }
 
   return (
     <>
@@ -172,7 +198,7 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }: Props) {
         </ScrollArea>
 
         {/* Footer */}
-        <div className="border-t border-sidebar-border p-3">
+        <div className="space-y-3 border-t border-sidebar-border p-3">
           {collapsed ? (
             <div
               className="mx-auto h-2 w-2 rounded-full bg-success animate-pulse"
@@ -197,6 +223,33 @@ export function Sidebar({ collapsed, mobileOpen, onMobileClose }: Props) {
               </div>
             </div>
           )}
+          <div className="flex items-center gap-2 border-t border-sidebar-border pt-3">
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-semibold uppercase text-muted-foreground">
+                  Signed in as
+                </div>
+                <div
+                  className="truncate text-xs font-medium text-sidebar-foreground"
+                  title={userEmail ?? undefined}
+                >
+                  {userEmail ?? "Verifying session…"}
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size={collapsed ? "icon" : "sm"}
+              className={cn("shrink-0 text-muted-foreground", !collapsed && "ml-auto")}
+              onClick={() => void handleSignOut()}
+              disabled={signingOut}
+              aria-label={userEmail ? `Sign out ${userEmail}` : "Sign out"}
+              title={collapsed ? `Sign out${userEmail ? ` · ${userEmail}` : ""}` : undefined}
+            >
+              <LogOut />
+              {!collapsed && <span>{signingOut ? "Signing out…" : "Sign out"}</span>}
+            </Button>
+          </div>
         </div>
       </aside>
     </>

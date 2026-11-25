@@ -4,16 +4,19 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
+  redirect,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { lazy, useEffect, type ReactNode } from "react";
+import { lazy, useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -78,29 +81,20 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 const LazyErrorComponent = lazy(() => Promise.resolve({ default: ErrorComponent }));
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  ssr: false,
+  beforeLoad: async ({ location }) => {
+    const path = location.pathname;
+    if (path === "/login" || path === "/reset-password" || path.startsWith("/api/")) return;
+
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/login" });
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RiayahOS — Healthcare Intelligence Platform" },
-      {
-        name: "description",
-        content:
-          "RiayahOS is the operating system for Riayah Care — connecting GCC patients with leading hospitals in Kerala, India.",
-      },
-      { property: "og:title", content: "RiayahOS — Healthcare Intelligence Platform" },
-      {
-        property: "og:description",
-        content: "Premium healthcare operations for international medical tourism.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "RiayahOS — Healthcare Intelligence Platform" },
-      { name: "description", content: "RiayahOS Foundation provides a premium healthcare OS for connecting patients with international medical facilities." },
-      { property: "og:description", content: "RiayahOS Foundation provides a premium healthcare OS for connecting patients with international medical facilities." },
-      { name: "twitter:description", content: "RiayahOS Foundation provides a premium healthcare OS for connecting patients with international medical facilities." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/662cbd41-f868-40f3-b438-b8b6dbbc24ba/id-preview-b298934c--f9d616c3-e821-4c98-b48e-09b6c14ed436.lovable.app-1782679441069.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/662cbd41-f868-40f3-b438-b8b6dbbc24ba/id-preview-b298934c--f9d616c3-e821-4c98-b48e-09b6c14ed436.lovable.app-1782679441069.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -134,13 +128,49 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUserEmail(session?.user.email ?? null);
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+
+      if (event === "SIGNED_OUT") {
+        void queryClient.cancelQueries();
+        queryClient.clear();
+      } else {
+        void queryClient.invalidateQueries();
+      }
+      void router.invalidate();
+    });
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (active) setUserEmail(data.user?.email ?? null);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [queryClient, router]);
+
+  const isPublicAuthPage = pathname === "/login" || pathname === "/reset-password";
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AppShell>
+        {isPublicAuthPage ? (
           <Outlet />
-        </AppShell>
+        ) : (
+          <AppShell userEmail={userEmail}>
+            <Outlet />
+          </AppShell>
+        )}
         <Toaster />
       </ThemeProvider>
     </QueryClientProvider>
