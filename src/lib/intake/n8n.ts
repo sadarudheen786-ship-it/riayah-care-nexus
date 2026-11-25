@@ -14,18 +14,63 @@ export type N8nLeadSource = (typeof N8N_LEAD_SOURCES)[number];
 type IntakeChannel = Database["public"]["Enums"]["intake_channel"];
 type LeadSource = Database["public"]["Enums"]["lead_source"];
 
-const httpUrlSchema = z
+export const AI_BRIEF_SERIOUSNESS = ["critical", "high", "moderate", "low"] as const;
+export const AI_BRIEF_TEMPERATURE = ["hot", "warm", "cold"] as const;
+export type AiBriefSeriousness = (typeof AI_BRIEF_SERIOUSNESS)[number];
+export type AiBriefTemperature = (typeof AI_BRIEF_TEMPERATURE)[number];
+
+const aiBriefTextListSchema = z.array(z.string().trim().max(2000)).max(50);
+
+export const n8nAiBriefSchema = z.object({
+  seriousness: z.enum(AI_BRIEF_SERIOUSNESS),
+  seriousness_reason: z.string().trim().max(5000),
+  temperature: z.enum(AI_BRIEF_TEMPERATURE),
+  score: z.number().finite(),
+  summary: z.string().trim().max(10000),
+  key_findings: aiBriefTextListSchema,
+  likely_specialty: z.string().trim().max(200),
+  suggested_hospitals: aiBriefTextListSchema,
+  missing_info: aiBriefTextListSchema,
+  talking_points: aiBriefTextListSchema,
+  questions_to_ask: aiBriefTextListSchema,
+  red_flags: aiBriefTextListSchema,
+  residence_confirmed: z.boolean(),
+  language: z.enum(["ar", "en"]),
+  generated_at: z.string().datetime({ offset: true }),
+});
+
+function isIpAddressLiteral(hostname: string): boolean {
+  return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname) || hostname.includes(":");
+}
+
+export function isSafeExternalAttachmentUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase().replace(/\.$/, "");
+    const blockedSuffixes = [".localhost", ".local", ".internal", ".test", ".invalid", ".example"];
+    if (
+      url.protocol !== "https:" ||
+      url.username.length > 0 ||
+      url.password.length > 0 ||
+      (url.port.length > 0 && url.port !== "443") ||
+      !hostname.includes(".") ||
+      hostname === "localhost" ||
+      isIpAddressLiteral(hostname) ||
+      blockedSuffixes.some((suffix) => hostname.endsWith(suffix))
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const secureAttachmentUrlSchema = z
   .string()
   .max(2048)
   .url()
-  .refine((value) => {
-    try {
-      const url = new URL(value);
-      return url.protocol === "https:" || url.protocol === "http:";
-    } catch {
-      return false;
-    }
-  }, "Attachment URLs must use HTTP or HTTPS.");
+  .refine(isSafeExternalAttachmentUrl, "Attachment URLs must use a public HTTPS URL.");
 
 export const n8nLeadSchema = z.object({
   source: z.enum(N8N_LEAD_SOURCES),
@@ -35,8 +80,9 @@ export const n8nLeadSchema = z.object({
   email: z.string().trim().email().max(200).nullable().optional(),
   country: z.string().trim().max(100).nullable().optional(),
   message_text: z.string().max(20_000).nullable().optional(),
+  ai_brief: n8nAiBriefSchema.optional(),
   attachments: z
-    .array(z.object({ url: httpUrlSchema, type: z.string().trim().min(1).max(100) }))
+    .array(z.object({ url: secureAttachmentUrlSchema, type: z.string().trim().min(1).max(100) }))
     .max(20)
     .default([]),
   raw_payload: z.record(z.string(), z.unknown()).default({}),
@@ -202,4 +248,31 @@ export function newLeadCaseFields(source: N8nLeadSource, receivedAt: string) {
     enquiry_date: new Date(receivedAt).toISOString().slice(0, 10),
     is_demo: false,
   };
+}
+
+export type AiBriefPrioritizedLead = {
+  aiSeriousness: AiBriefSeriousness | null;
+  aiTemperature: AiBriefTemperature | null;
+  createdAt: string;
+};
+
+export function sortLeadsByAiBrief<T extends AiBriefPrioritizedLead>(leads: readonly T[]): T[] {
+  const seriousnessRank: Record<AiBriefSeriousness, number> = {
+    critical: 4,
+    high: 3,
+    moderate: 2,
+    low: 1,
+  };
+  const temperatureRank: Record<AiBriefTemperature, number> = { hot: 2, warm: 1, cold: 0 };
+  const rank = (lead: AiBriefPrioritizedLead) => {
+    if (!lead.aiSeriousness || !lead.aiTemperature) return -1;
+    if (lead.aiSeriousness === "critical" && lead.aiTemperature === "hot") return 100;
+    return seriousnessRank[lead.aiSeriousness] * 3 + temperatureRank[lead.aiTemperature];
+  };
+
+  return [...leads].sort((left, right) => {
+    const rankDifference = rank(right) - rank(left);
+    if (rankDifference !== 0) return rankDifference;
+    return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+  });
 }

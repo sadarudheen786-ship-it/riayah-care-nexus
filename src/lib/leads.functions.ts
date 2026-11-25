@@ -8,8 +8,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  sortLeadsByAiBrief,
+  type AiBriefSeriousness,
+  type AiBriefTemperature,
+} from "./intake/n8n";
 
 type Urgency = Database["public"]["Enums"]["urgency_level"];
+export type LeadAiBrief = Database["public"]["Tables"]["lead_ai_briefs"]["Row"];
+export type LeadIntakeAttachment = Database["public"]["Tables"]["lead_intake_attachments"]["Row"];
 
 export const LEAD_FUNNEL_STAGES = [
   "New Lead",
@@ -78,6 +85,9 @@ export type LeadRow = {
   urgency: Urgency;
   aiPriority: Urgency | null;
   aiPriorityReason: string | null;
+  aiSeriousness: AiBriefSeriousness | null;
+  aiTemperature: AiBriefTemperature | null;
+  aiScore: number | null;
   humanConfirmed: boolean;
   coordinator: string | null;
   createdAt: string;
@@ -133,7 +143,7 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
 
     const caseIds = (cases ?? []).map((c) => c.id);
 
-    const [triage, comms, leadMessages, facts, docs, intake, identity] = await Promise.all([
+    const [triage, comms, leadMessages, facts, docs, intake, identity, latestBriefs] = await Promise.all([
       caseIds.length
         ? supabase
             .from("ai_triage_assessments")
@@ -169,6 +179,9 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
         .order("received_at", { ascending: false })
         .limit(200),
       supabase.from("identity_match_candidates").select("id").eq("resolution", "pending"),
+      caseIds.length
+        ? supabase.rpc("get_latest_lead_ai_briefs", { p_lead_ids: caseIds })
+        : Promise.resolve({ data: [], error: null }),
     ]);
 
     const triageByCase = new Map(
@@ -188,12 +201,15 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
       }
     }
     const conflictCases = new Set((facts.data ?? []).map((f) => f.case_id ?? ""));
+    const aiBriefByCase = new Map(
+      (latestBriefs.data ?? []).map((brief) => [brief.lead_id, brief]),
+    );
     const docCount = new Map<string, number>();
     for (const doc of docs.data ?? []) {
       if (doc.case_id) docCount.set(doc.case_id, (docCount.get(doc.case_id) ?? 0) + 1);
     }
 
-    const leads: LeadRow[] = (cases ?? []).map((c) => {
+    const leads: LeadRow[] = sortLeadsByAiBrief((cases ?? []).map((c) => {
       const person = c.persons as unknown as {
         first_name: string;
         last_name: string | null;
@@ -203,6 +219,7 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
       } | null;
       const coordinator = c.users as unknown as { full_name: string } | null;
       const t = triageByCase.get(c.id);
+      const aiBrief = aiBriefByCase.get(c.id);
       return {
         caseId: c.id,
         personId: c.person_id,
@@ -220,6 +237,9 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
         urgency: c.urgency,
         aiPriority: (t?.recommended_priority as Urgency | null) ?? null,
         aiPriorityReason: t?.reason ?? null,
+        aiSeriousness: (aiBrief?.seriousness as AiBriefSeriousness | undefined) ?? null,
+        aiTemperature: (aiBrief?.temperature as AiBriefTemperature | undefined) ?? null,
+        aiScore: aiBrief?.score ?? null,
         humanConfirmed: t?.decided_by_type === "human",
         coordinator: coordinator?.full_name ?? null,
         createdAt: c.created_at,
@@ -227,7 +247,7 @@ export const getLeadDashboard = createServerFn({ method: "GET" })
         hasConflicts: conflictCases.has(c.id),
         documentsCount: docCount.get(c.id) ?? 0,
       };
-    });
+    }));
 
     const countStage = (stage: LeadFunnelStage) => leads.filter((l) => l.stage === stage).length;
     const bySourceMap = new Map<string, number>();
@@ -278,7 +298,7 @@ export const getLeadDetail = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const supabase = context.supabase;
 
-    const [facts, triage, comms, summary, tasks, attribution, transcripts, extractions, leadMessages] =
+    const [facts, triage, comms, summary, tasks, attribution, transcripts, extractions, leadMessages, aiBriefs, intakeAttachments] =
       await Promise.all([
         supabase
           .from("extracted_facts")
@@ -332,6 +352,17 @@ export const getLeadDetail = createServerFn({ method: "GET" })
           .select("id, source, direction, text, attachments, received_at")
           .eq("lead_id", data.caseId)
           .order("received_at", { ascending: false }),
+        supabase
+          .from("lead_ai_briefs")
+          .select("*")
+          .eq("lead_id", data.caseId)
+          .order("created_at", { ascending: false })
+          .limit(50),
+        supabase
+          .from("lead_intake_attachments")
+          .select("*")
+          .eq("lead_id", data.caseId)
+          .order("created_at", { ascending: false }),
       ]);
 
     return {
@@ -344,7 +375,32 @@ export const getLeadDetail = createServerFn({ method: "GET" })
       transcripts: transcripts.data ?? [],
       extractions: extractions.data ?? [],
       leadMessages: leadMessages.data ?? [],
+      aiBriefHistory: aiBriefs.data ?? [],
+      intakeAttachments: intakeAttachments.data ?? [],
     };
+  });
+
+export const getLeadReportSignedUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ attachmentId: z.string().uuid(), download: z.boolean().default(false) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: attachment, error } = await context.supabase
+      .from("lead_intake_attachments")
+      .select("storage_path, file_name")
+      .eq("id", data.attachmentId)
+      .maybeSingle();
+    if (error || !attachment) throw new Error("This private report is unavailable.");
+
+    const storage = context.supabase.storage.from("patient-intake");
+    const signedResult = data.download
+      ? await storage.createSignedUrl(attachment.storage_path, 60, { download: attachment.file_name })
+      : await storage.createSignedUrl(attachment.storage_path, 60);
+    if (signedResult.error || !signedResult.data?.signedUrl) {
+      throw new Error("This private report is unavailable.");
+    }
+    return signedResult.data.signedUrl;
   });
 
 /* ------------------------------------------------------------------ */

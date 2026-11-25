@@ -6,6 +6,7 @@ import {
   newLeadCaseFields,
   normalizePhoneToE164,
   n8nLeadSchema,
+  sortLeadsByAiBrief,
 } from "./n8n";
 
 describe("n8n lead intake rules", () => {
@@ -60,7 +61,49 @@ describe("n8n lead intake rules", () => {
     assert.equal(newLeadCaseFields("lead_ad", "2026-11-24T10:30:00.000Z").lead_source, "lead_ad");
   });
 
-  it("rejects non-HTTP attachment URLs and unknown sources", () => {
+  it("accepts the complete optional internal AI brief and rejects unsupported values", () => {
+    const valid = {
+      source: "website",
+      external_id: "web-123",
+      received_at: "2026-11-24T10:30:00.000Z",
+      raw_payload: {},
+    };
+    const aiBrief = {
+      seriousness: "critical",
+      seriousness_reason: "Rapidly worsening symptoms",
+      temperature: "hot",
+      score: 92.5,
+      summary: "The patient requested urgent specialist review.",
+      key_findings: ["Symptoms began recently"],
+      likely_specialty: "Cardiology",
+      suggested_hospitals: ["Riayah partner hospital"],
+      missing_info: ["Recent test results"],
+      talking_points: ["Confirm symptom progression"],
+      questions_to_ask: ["When did symptoms worsen?"],
+      red_flags: ["New chest pain"],
+      residence_confirmed: true,
+      language: "en",
+      generated_at: "2026-11-24T10:30:00.000Z",
+    };
+
+    const accepted = n8nLeadSchema.safeParse({ ...valid, ai_brief: aiBrief });
+    assert.equal(accepted.success, true);
+    assert.equal(n8nLeadSchema.safeParse({ ...valid, ai_brief: { ...aiBrief, temperature: "urgent" } }).success, false);
+    assert.equal(n8nLeadSchema.safeParse({ ...valid, ai_brief: { ...aiBrief, language: "fr" } }).success, false);
+  });
+
+  it("orders Critical + Hot first and leaves leads without briefs last", () => {
+    const sorted = sortLeadsByAiBrief([
+      { id: "no-brief", aiSeriousness: null, aiTemperature: null, createdAt: "2026-11-24T12:00:00.000Z" },
+      { id: "high-hot", aiSeriousness: "high", aiTemperature: "hot", createdAt: "2026-11-24T11:00:00.000Z" },
+      { id: "critical-hot", aiSeriousness: "critical", aiTemperature: "hot", createdAt: "2026-11-24T09:00:00.000Z" },
+      { id: "critical-cold", aiSeriousness: "critical", aiTemperature: "cold", createdAt: "2026-11-24T10:00:00.000Z" },
+    ]);
+
+    assert.deepEqual(sorted.map((lead) => lead.id), ["critical-hot", "critical-cold", "high-hot", "no-brief"]);
+  });
+
+  it("rejects insecure attachment URLs and unknown sources", () => {
     const valid = {
       source: "website",
       external_id: "web-123",
@@ -69,6 +112,14 @@ describe("n8n lead intake rules", () => {
     };
     assert.equal(
       n8nLeadSchema.safeParse({ ...valid, attachments: [{ url: "javascript:alert(1)", type: "image" }] }).success,
+      false,
+    );
+    assert.equal(
+      n8nLeadSchema.safeParse({ ...valid, attachments: [{ url: "http://files.example.org/report.pdf", type: "pdf" }] }).success,
+      false,
+    );
+    assert.equal(
+      n8nLeadSchema.safeParse({ ...valid, attachments: [{ url: "https://127.0.0.1/report.pdf", type: "pdf" }] }).success,
       false,
     );
     assert.equal(n8nLeadSchema.safeParse({ ...valid, source: "sms" }).success, false);

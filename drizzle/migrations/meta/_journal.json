@@ -29,6 +29,27 @@
       "when": 1795606572775,
       "tag": "0003_validate_n8n_case_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795629337332,
+      "tag": "0004_add_n8n_ai_briefs_and_report_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795629367372,
+      "tag": "0005_add_intake_attachment_label",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795629540980,
+      "tag": "0006_set_defaults_for_ai_intake_rpc",
+      "breakpoints": true
     }
   ]
 }

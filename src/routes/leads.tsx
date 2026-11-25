@@ -9,11 +9,14 @@ import {
   CheckCircle2,
   ClipboardList,
   Copy,
+  Download,
+  Eye,
   FileText,
   Inbox,
   Loader2,
   MessageCircle,
   Search,
+  ShieldAlert,
   Sparkles,
   Stethoscope,
   UserPlus,
@@ -61,8 +64,11 @@ import {
   createManualLead,
   getLeadDashboard,
   getLeadDetail,
+  getLeadReportSignedUrl,
   overrideLeadPriority,
   reviewExtractedFact,
+  type LeadAiBrief,
+  type LeadIntakeAttachment,
   type LeadRow,
 } from "@/lib/leads.functions";
 
@@ -71,6 +77,19 @@ const priorityTone: Record<string, string> = {
   high: "bg-warning/10 text-warning border-warning/20",
   medium: "bg-info/10 text-info border-info/20",
   low: "bg-muted text-muted-foreground border-border",
+};
+
+const seriousnessTone: Record<string, string> = {
+  critical: "bg-destructive/10 text-destructive border-destructive/20",
+  high: "bg-warning/10 text-warning border-warning/20",
+  moderate: "bg-info/10 text-info border-info/20",
+  low: "bg-success/10 text-success border-success/20",
+};
+
+const temperatureTone: Record<string, string> = {
+  hot: "bg-destructive/10 text-destructive border-destructive/20",
+  warm: "bg-warning/10 text-warning border-warning/20",
+  cold: "bg-info/10 text-info border-info/20",
 };
 
 function relativeTime(value: string | null) {
@@ -144,6 +163,8 @@ function LeadManagement() {
   const [stageFilter, setStageFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [seriousnessFilter, setSeriousnessFilter] = useState("all");
+  const [temperatureFilter, setTemperatureFilter] = useState("all");
   const [selected, setSelected] = useState<LeadRow | null>(null);
   const [newLeadOpen, setNewLeadOpen] = useState(false);
 
@@ -162,12 +183,14 @@ function LeadManagement() {
       if (stageFilter !== "all" && lead.stage !== stageFilter) return false;
       if (priorityFilter !== "all" && lead.urgency !== priorityFilter) return false;
       if (sourceFilter !== "all" && (lead.source ?? "unknown") !== sourceFilter) return false;
+      if (seriousnessFilter !== "all" && lead.aiSeriousness !== seriousnessFilter) return false;
+      if (temperatureFilter !== "all" && lead.aiTemperature !== temperatureFilter) return false;
       if (!term) return true;
       return [lead.name, lead.country, lead.condition, lead.phone, lead.whatsapp]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(term));
     });
-  }, [leads, search, stageFilter, priorityFilter, sourceFilter]);
+  }, [leads, search, stageFilter, priorityFilter, sourceFilter, seriousnessFilter, temperatureFilter]);
 
   const k = data?.kpis;
   const maxFunnel = Math.max(1, ...(data?.funnel ?? []).map((f) => f.count));
@@ -337,6 +360,29 @@ function LeadManagement() {
                     <SelectItem value="low">Low</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={seriousnessFilter} onValueChange={setSeriousnessFilter}>
+                  <SelectTrigger className="h-9 w-36">
+                    <SelectValue placeholder="Seriousness" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All seriousness</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="moderate">Moderate</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={temperatureFilter} onValueChange={setTemperatureFilter}>
+                  <SelectTrigger className="h-9 w-36">
+                    <SelectValue placeholder="Temperature" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All temperatures</SelectItem>
+                    <SelectItem value="hot">Hot</SelectItem>
+                    <SelectItem value="warm">Warm</SelectItem>
+                    <SelectItem value="cold">Cold</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select value={sourceFilter} onValueChange={setSourceFilter}>
                   <SelectTrigger className="h-9 w-36">
                     <SelectValue placeholder="Source" />
@@ -367,67 +413,85 @@ function LeadManagement() {
                 }
               />
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Condition</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Coordinator</TableHead>
-                    <TableHead>Last contact</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((lead) => (
-                    <TableRow
-                      key={lead.caseId}
-                      className="cursor-pointer"
-                      onClick={() => setSelected(lead)}
-                    >
-                      <TableCell>
-                        <div className="font-medium text-foreground">{lead.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {lead.whatsapp ?? lead.phone ?? "No contact number"}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">{lead.country ?? "—"}</TableCell>
-                      <TableCell className="text-sm">
-                        {lead.condition ?? (
-                          <span className="text-muted-foreground">Not stated yet</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">{titleCase(lead.source)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{lead.stage}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <Badge className={cn("border", priorityTone[lead.urgency])}>
-                            {titleCase(lead.urgency)}
-                          </Badge>
-                          {lead.aiPriority && !lead.humanConfirmed && (
-                            <BrainCircuit className="h-3.5 w-3.5 text-muted-foreground" />
-                          )}
-                          {lead.hasConflicts && (
-                            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {lead.coordinator ?? (
-                          <span className="text-warning">Unassigned</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {relativeTime(lead.lastContactAt)}
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Condition</TableHead>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Stage</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Seriousness</TableHead>
+                      <TableHead>Temperature</TableHead>
+                      <TableHead>Coordinator</TableHead>
+                      <TableHead>Last contact</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((lead) => (
+                      <TableRow
+                        key={lead.caseId}
+                        className="cursor-pointer"
+                        onClick={() => setSelected(lead)}
+                      >
+                        <TableCell>
+                          <div className="font-medium text-foreground">{lead.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {lead.whatsapp ?? lead.phone ?? "No contact number"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">{lead.country ?? "—"}</TableCell>
+                        <TableCell className="text-sm">
+                          {lead.condition ?? (
+                            <span className="text-muted-foreground">Not stated yet</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">{titleCase(lead.source)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{lead.stage}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <Badge className={cn("border", priorityTone[lead.urgency])}>
+                              {titleCase(lead.urgency)}
+                            </Badge>
+                            {lead.aiPriority && !lead.humanConfirmed && (
+                              <BrainCircuit className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                            {lead.hasConflicts && (
+                              <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {lead.aiSeriousness ? (
+                            <Badge className={cn("border", seriousnessTone[lead.aiSeriousness])}>
+                              {titleCase(lead.aiSeriousness)}
+                            </Badge>
+                          ) : <span className="text-sm text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell>
+                          {lead.aiTemperature ? (
+                            <Badge className={cn("border", temperatureTone[lead.aiTemperature])}>
+                              {titleCase(lead.aiTemperature)}
+                            </Badge>
+                          ) : <span className="text-sm text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {lead.coordinator ?? (
+                            <span className="text-warning">Unassigned</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {relativeTime(lead.lastContactAt)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </Widget>
         </div>
@@ -633,10 +697,12 @@ function LeadDetailSheet({
   onChanged: () => void;
 }) {
   const fetchDetail = useServerFn(getLeadDetail);
+  const getReportLink = useServerFn(getLeadReportSignedUrl);
   const override = useServerFn(overrideLeadPriority);
   const review = useServerFn(reviewExtractedFact);
   const [overrideReason, setOverrideReason] = useState("");
   const [overridePriority, setOverridePriority] = useState("high");
+  const [openingReportId, setOpeningReportId] = useState<string | null>(null);
 
   const detail = useQuery({
     queryKey: ["lead-detail", lead?.caseId],
@@ -671,6 +737,22 @@ function LeadDetailSheet({
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const openReport = async (attachmentId: string, download: boolean) => {
+    const tab = window.open("about:blank", "_blank");
+    if (tab) tab.opener = null;
+    setOpeningReportId(attachmentId);
+    try {
+      const signedUrl = await getReportLink({ data: { attachmentId, download } });
+      if (tab) tab.location.assign(signedUrl);
+      else window.location.assign(signedUrl);
+    } catch {
+      tab?.close();
+      toast.error("This private report could not be opened.");
+    } finally {
+      setOpeningReportId(null);
+    }
+  };
 
   const currentTriage = detail.data?.triage.find((t) => t.is_current);
   const conversationItems = [
@@ -723,6 +805,10 @@ function LeadDetailSheet({
                   <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                 ) : (
                   <>
+                    <AiCaseBriefPanel
+                      brief={detail.data?.aiBriefHistory[0] ?? null}
+                      history={detail.data?.aiBriefHistory ?? []}
+                    />
                     <div className="surface-card p-4">
                       <div className="flex items-center gap-2 text-sm font-semibold">
                         <BrainCircuit className="h-4 w-4 text-primary" />
@@ -810,6 +896,11 @@ function LeadDetailSheet({
               </TabsContent>
 
               <TabsContent value="evidence" className="mt-4 space-y-3">
+                <IntakeReports
+                  attachments={detail.data?.intakeAttachments ?? []}
+                  openingReportId={openingReportId}
+                  onOpenReport={openReport}
+                />
                 {(detail.data?.facts.length ?? 0) === 0 ? (
                   <EmptyState
                     title="No extracted information yet"
@@ -915,5 +1006,183 @@ function LeadDetailSheet({
         </ScrollArea>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function BriefList({ title, items }: { title: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="mt-3">
+      <h4 className="text-xs font-semibold text-foreground">{title}</h4>
+      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        {items.map((item, index) => <li key={`${title}-${index}`}>{item}</li>)}
+      </ul>
+    </section>
+  );
+}
+
+function AiCaseBriefPanel({
+  brief,
+  history,
+}: {
+  brief: LeadAiBrief | null;
+  history: LeadAiBrief[];
+}) {
+  return (
+    <section className="surface-card p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">AI Case Brief — internal only</h3>
+          <Badge className="mt-2 border border-warning/30 bg-warning/10 text-warning">
+            Not for patient. Decision support only
+          </Badge>
+        </div>
+        {brief && (
+          <div className="flex flex-wrap gap-2">
+            <Badge className={cn("border", seriousnessTone[brief.seriousness] ?? "bg-muted text-muted-foreground border-border")}>
+              {titleCase(brief.seriousness)} seriousness
+            </Badge>
+            <Badge className={cn("border", temperatureTone[brief.temperature] ?? "bg-muted text-muted-foreground border-border")}>
+              {titleCase(brief.temperature)}
+            </Badge>
+            <Badge variant="outline">Score {brief.score}</Badge>
+          </div>
+        )}
+      </div>
+
+      {!brief ? (
+        <p className="mt-4 text-sm text-muted-foreground">No AI case brief has been received for this lead.</p>
+      ) : (
+        <>
+          <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+              <ShieldAlert className="h-4 w-4" /> Red flags
+            </div>
+            {brief.red_flags.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-destructive">
+                {brief.red_flags.map((item, index) => <li key={`red-flag-${index}`}>{item}</li>)}
+              </ul>
+            ) : <p className="mt-2 text-sm text-destructive">No red flags supplied.</p>}
+          </div>
+
+          <div className="mt-4">
+            <h4 className="text-xs font-semibold text-foreground">Summary</h4>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{brief.summary}</p>
+          </div>
+          <div className="mt-3">
+            <h4 className="text-xs font-semibold text-foreground">Seriousness reason</h4>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{brief.seriousness_reason}</p>
+          </div>
+          <BriefList title="Key findings" items={brief.key_findings} />
+          <BriefList title="Suggested hospitals" items={brief.suggested_hospitals} />
+          <BriefList title="Missing information" items={brief.missing_info} />
+          <BriefList title="Talking points" items={brief.talking_points} />
+          <BriefList title="Questions to ask" items={brief.questions_to_ask} />
+          <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-3 text-sm">
+            <div>
+              <dt className="text-xs text-muted-foreground">Likely specialty</dt>
+              <dd className="mt-0.5 font-medium text-foreground">{brief.likely_specialty || "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Residence</dt>
+              <dd className="mt-0.5 font-medium text-foreground">
+                {brief.residence_confirmed ? "Confirmed" : "Not confirmed"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Language</dt>
+              <dd className="mt-0.5 font-medium text-foreground">{brief.language === "ar" ? "Arabic" : "English"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Generated</dt>
+              <dd className="mt-0.5 font-medium text-foreground">{new Date(brief.generated_at).toLocaleString()}</dd>
+            </div>
+          </dl>
+          {history.length > 1 && (
+            <details className="mt-4 border-t border-border pt-3">
+              <summary className="cursor-pointer text-sm font-medium text-foreground">
+                Earlier briefs ({history.length - 1})
+              </summary>
+              <div className="mt-3 space-y-3">
+                {history.slice(1).map((previous) => (
+                  <div key={previous.id} className="border-l-2 border-border pl-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge className={cn("border", seriousnessTone[previous.seriousness] ?? "bg-muted text-muted-foreground border-border")}>
+                        {titleCase(previous.seriousness)}
+                      </Badge>
+                      <Badge className={cn("border", temperatureTone[previous.temperature] ?? "bg-muted text-muted-foreground border-border")}>
+                        {titleCase(previous.temperature)}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(previous.generated_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{previous.summary}</p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+function IntakeReports({
+  attachments,
+  openingReportId,
+  onOpenReport,
+}: {
+  attachments: LeadIntakeAttachment[];
+  openingReportId: string | null;
+  onOpenReport: (attachmentId: string, download: boolean) => void;
+}) {
+  return (
+    <section className="surface-card p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <FileText className="h-4 w-4 text-primary" /> Private intake reports
+      </div>
+      {attachments.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">No private reports have been received.</p>
+      ) : (
+        <ul className="mt-3 divide-y divide-border">
+          {attachments.map((attachment) => (
+            <li key={attachment.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+              <div className="min-w-0">
+                <div className="break-all text-sm font-medium text-foreground">{attachment.file_name}</div>
+                <div className="mt-0.5 text-xs text-muted-foreground">
+                  {titleCase(attachment.attachment_type)} · {attachment.mime_type} · {Math.max(1, Math.round(attachment.size_bytes / 1024))} KB
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  aria-label={`View ${attachment.file_name}`}
+                  title="Open report"
+                  disabled={openingReportId === attachment.id}
+                  onClick={() => onOpenReport(attachment.id, false)}
+                >
+                  {openingReportId === attachment.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                  <span className="ml-1.5">View</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Download ${attachment.file_name}`}
+                  title="Download report"
+                  disabled={openingReportId === attachment.id}
+                  onClick={() => onOpenReport(attachment.id, true)}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="ml-1.5">Download</span>
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

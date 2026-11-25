@@ -9,4 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- External n8n intake stores leads in `public.cases` and inbound history in `public.lead_messages` keyed by case ID; the `/api/public/*` route is the published external entry point, while `/api/intake/lead` remains an alias.
+- External n8n intake stores leads in `public.cases` and inbound history in `public.lead_messages` keyed by case ID; use `/api/public/*` as the published entry point and `/api/intake/lead` as its alias. Append each AI brief to case history and store reports in the private `patient-intake` bucket with staff-only metadata and signed links, preserving history without exposing source URLs.

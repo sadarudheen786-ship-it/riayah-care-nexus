@@ -1935,6 +1935,77 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_ai_briefs: {
+        Row: {
+          created_at: string
+          generated_at: string
+          id: string
+          key_findings: string[]
+          language: string
+          lead_id: string
+          likely_specialty: string
+          missing_info: string[]
+          questions_to_ask: string[]
+          red_flags: string[]
+          residence_confirmed: boolean
+          score: number
+          seriousness: string
+          seriousness_reason: string
+          suggested_hospitals: string[]
+          summary: string
+          talking_points: string[]
+          temperature: string
+        }
+        Insert: {
+          created_at?: string
+          generated_at: string
+          id?: string
+          key_findings?: string[]
+          language: string
+          lead_id: string
+          likely_specialty: string
+          missing_info?: string[]
+          questions_to_ask?: string[]
+          red_flags?: string[]
+          residence_confirmed: boolean
+          score: number
+          seriousness: string
+          seriousness_reason: string
+          suggested_hospitals?: string[]
+          summary: string
+          talking_points?: string[]
+          temperature: string
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          key_findings?: string[]
+          language?: string
+          lead_id?: string
+          likely_specialty?: string
+          missing_info?: string[]
+          questions_to_ask?: string[]
+          red_flags?: string[]
+          residence_confirmed?: boolean
+          score?: number
+          seriousness?: string
+          seriousness_reason?: string
+          suggested_hospitals?: string[]
+          summary?: string
+          talking_points?: string[]
+          temperature?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_ai_briefs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_attribution: {
         Row: {
           ad_id: string | null
@@ -2041,6 +2112,53 @@ export type Database = {
             columns: ["referral_partner_id"]
             isOneToOne: false
             referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_intake_attachments: {
+        Row: {
+          attachment_type: string
+          created_at: string
+          external_id: string
+          file_name: string
+          id: string
+          lead_id: string
+          mime_type: string
+          size_bytes: number
+          source: string
+          storage_path: string
+        }
+        Insert: {
+          attachment_type?: string
+          created_at?: string
+          external_id: string
+          file_name: string
+          id?: string
+          lead_id: string
+          mime_type: string
+          size_bytes: number
+          source: string
+          storage_path: string
+        }
+        Update: {
+          attachment_type?: string
+          created_at?: string
+          external_id?: string
+          file_name?: string
+          id?: string
+          lead_id?: string
+          mime_type?: string
+          size_bytes?: number
+          source?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_intake_attachments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
             referencedColumns: ["id"]
           },
         ]
@@ -3269,6 +3387,29 @@ export type Database = {
           lead_id: string
         }[]
       }
+      create_n8n_lead_message_with_ai_brief: {
+        Args: {
+          p_ai_brief?: Json
+          p_attachments?: Json
+          p_country?: string
+          p_email?: string
+          p_existing_lead_id?: string
+          p_existing_person_id?: string
+          p_external_id?: string
+          p_message_text?: string
+          p_name?: string
+          p_new_case_fields?: Json
+          p_normalized_phone?: string
+          p_phone?: string
+          p_raw_payload?: Json
+          p_received_at?: string
+          p_source?: string
+        }
+        Returns: {
+          created: boolean
+          lead_id: string
+        }[]
+      }
       create_n8n_lead_message_with_case_fields: {
         Args: {
           p_attachments?: Json
@@ -3289,6 +3430,28 @@ export type Database = {
         Returns: {
           created: boolean
           lead_id: string
+        }[]
+      }
+      get_latest_lead_ai_briefs: {
+        Args: { p_lead_ids: string[] }
+        Returns: {
+          created_at: string
+          generated_at: string
+          key_findings: string[]
+          language: string
+          lead_id: string
+          likely_specialty: string
+          missing_info: string[]
+          questions_to_ask: string[]
+          red_flags: string[]
+          residence_confirmed: boolean
+          score: number
+          seriousness: string
+          seriousness_reason: string
+          suggested_hospitals: string[]
+          summary: string
+          talking_points: string[]
+          temperature: string
         }[]
       }
     }
